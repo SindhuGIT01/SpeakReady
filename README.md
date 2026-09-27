@@ -10,7 +10,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 |---|------|--------|
 | 1 | Setup: structure, config, Groq LLM client | ✅ Done |
 | 2 | Question bank RAG | ✅ Done |
-| 3 | Resume RAG + resume-based questions | ⬜ |
+| 3 | Resume RAG + resume-based questions | ✅ Done |
 | 4 | Speech-to-text (Groq Whisper) | ⬜ |
 | 5 | Speech feature extraction | ⬜ |
 | 6 | ML fluency model | ⬜ |
@@ -28,3 +28,12 @@ difficulty, n)`. Re-ingest anytime with:
 ```bash
 python -m src.question_bank --ingest
 ```
+
+`src/resume.py` handles per-user resume RAG: `load_resume(pdf_path)` extracts text
+with pypdf (raising a clear error on scanned/empty PDFs), `index_resume(text,
+session_id)` chunks and embeds it into a Chroma collection scoped to that session
+so resumes never mix between users, `extract_profile(text)` uses the LLM with
+structured output (Pydantic) to pull out name/skills/projects/education/
+certifications, and `generate_resume_questions(profile, n)` generates personalized
+questions that each cite the resume section they came from and are filtered to
+drop anything not grounded in the actual profile.

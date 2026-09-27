@@ -57,7 +57,7 @@ speakready/
 |---|------|--------|
 | 1 | Setup: structure, config, Groq LLM client | ✅ Done |
 | 2 | Question bank RAG | ✅ Done |
-| 3 | Resume RAG + resume-based questions | ⬜ |
+| 3 | Resume RAG + resume-based questions | ✅ Done |
 | 4 | Speech-to-text (Groq Whisper) | ⬜ |
 | 5 | Speech feature extraction | ⬜ |
 | 6 | ML fluency model | ⬜ |
