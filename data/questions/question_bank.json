@@ -1,0 +1,1718 @@
+[
+  {
+    "id": "q001",
+    "question": "Tell me about yourself.",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Concise summary of education and relevant background",
+      "Skills and experiences tied to the role applied for",
+      "Clear career goal or motivation",
+      "Confident delivery without rambling"
+    ]
+  },
+  {
+    "id": "q002",
+    "question": "Why do you want to work for this company?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Evidence of company research (products, mission, culture)",
+      "Specific reasons the company appeals to them",
+      "Alignment between personal goals and company direction"
+    ]
+  },
+  {
+    "id": "q003",
+    "question": "Where do you see yourself in five years?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Realistic, achievable growth plan",
+      "Alignment with the role and industry",
+      "Balance of ambition and commitment to the company"
+    ]
+  },
+  {
+    "id": "q004",
+    "question": "Why should we hire you?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Clear value proposition tied to job requirements",
+      "Specific skills or projects that match the JD",
+      "Concrete example of impact or capability"
+    ]
+  },
+  {
+    "id": "q005",
+    "question": "What are your strengths?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "One or two specific strengths, not a generic list",
+      "A real example demonstrating the strength",
+      "Relevance of the strength to the target role"
+    ]
+  },
+  {
+    "id": "q006",
+    "question": "What are your weaknesses?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A genuine, non-disqualifying weakness",
+      "Self-awareness about its impact",
+      "Concrete steps taken to improve"
+    ]
+  },
+  {
+    "id": "q007",
+    "question": "Why did you choose this career path?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Genuine motivation or origin story",
+      "Connection between interests/skills and the field chosen"
+    ]
+  },
+  {
+    "id": "q008",
+    "question": "What do you know about our company?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Accurate facts about products, mission, or market position",
+      "Awareness of recent news or achievements",
+      "A reason this fits the candidate's interests"
+    ]
+  },
+  {
+    "id": "q009",
+    "question": "Are you willing to relocate or work in rotational shifts?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Honest, direct answer",
+      "Flexibility balanced with realistic constraints",
+      "Alignment with the role's stated requirements"
+    ]
+  },
+  {
+    "id": "q010",
+    "question": "What is your expected salary?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Evidence of market research for the role/location",
+      "A reasonable range instead of a single fixed number",
+      "Openness to negotiate based on full compensation"
+    ]
+  },
+  {
+    "id": "q011",
+    "question": "Why are you leaving your current job, or why do you have a gap in your resume?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Honest, professional explanation",
+      "Positive framing without criticizing past employer",
+      "Focus on what was learned or gained"
+    ]
+  },
+  {
+    "id": "q012",
+    "question": "How do you handle pressure or stressful situations?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A specific coping technique or strategy",
+      "A concrete example under pressure",
+      "The outcome achieved despite the stress"
+    ]
+  },
+  {
+    "id": "q013",
+    "question": "What motivates you at work?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Intrinsic motivators (learning, impact, growth)",
+      "Connection between motivators and the role offered"
+    ]
+  },
+  {
+    "id": "q014",
+    "question": "Do you have any questions for us?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Thoughtful questions about the role, team, or growth path",
+      "Avoids questions answerable by a quick search",
+      "Shows genuine engagement with the interview"
+    ]
+  },
+  {
+    "id": "q015",
+    "question": "How would your friends or colleagues describe you?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Specific, credible traits rather than generic praise",
+      "A short anecdote backing up the description"
+    ]
+  },
+  {
+    "id": "q016",
+    "question": "What makes you a good fit for a fresher role at this company?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Eagerness to learn and grow",
+      "Foundational technical or soft skills relevant to the role",
+      "Adaptability and coachability"
+    ]
+  },
+  {
+    "id": "q017",
+    "question": "Tell me about a time you failed and what you learned from it.",
+    "category": "HR",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "A specific, real failure (not a disguised strength)",
+      "Honest reflection on the root cause",
+      "A concrete lesson applied afterward"
+    ]
+  },
+  {
+    "id": "q018",
+    "question": "What are your long-term career goals?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A realistic trajectory within the industry",
+      "Alignment with growth opportunities at the company"
+    ]
+  },
+  {
+    "id": "q019",
+    "question": "How do you prioritize your work when you have multiple deadlines?",
+    "category": "HR",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A clear prioritization method (e.g., urgency/impact)",
+      "Tools or techniques used to stay organized",
+      "A concrete example of it working"
+    ]
+  },
+  {
+    "id": "q020",
+    "question": "What is your understanding of work-life balance?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A realistic, mature perspective",
+      "Commitment to the job balanced with sustainable well-being"
+    ]
+  },
+  {
+    "id": "q021",
+    "question": "What are your hobbies or interests outside of academics or work?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Genuine interests, ideally with some transferable skill",
+      "Shows a well-rounded personality"
+    ]
+  },
+  {
+    "id": "q022",
+    "question": "How do you stay updated with the latest trends in your field?",
+    "category": "HR",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Specific resources (blogs, courses, communities)",
+      "Example of something recently learned and applied"
+    ]
+  },
+  {
+    "id": "q023",
+    "question": "Tell me about a time you worked in a team to complete a project.",
+    "category": "Behavioral",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Clear situation and task",
+      "Specific role and contribution",
+      "How collaboration was handled",
+      "Result achieved"
+    ]
+  },
+  {
+    "id": "q024",
+    "question": "Describe a situation where you had a conflict with a team member and how you resolved it.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Root cause of the conflict",
+      "Communication approach used",
+      "Resolution reached",
+      "Outcome or relationship afterward"
+    ]
+  },
+  {
+    "id": "q025",
+    "question": "Tell me about a time you had to learn a new technology or skill quickly.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Context and urgency",
+      "Learning approach or resources used",
+      "How it was applied",
+      "Result of the effort"
+    ]
+  },
+  {
+    "id": "q026",
+    "question": "Describe a time you made a mistake on a project. How did you handle it?",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Ownership of the mistake",
+      "Corrective action taken",
+      "Lesson learned and applied later"
+    ]
+  },
+  {
+    "id": "q027",
+    "question": "Tell me about a time you had to meet a tight deadline.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "How the work was planned",
+      "Prioritization or trade-offs made",
+      "Outcome of meeting (or missing) the deadline"
+    ]
+  },
+  {
+    "id": "q028",
+    "question": "Give an example of a goal you set and how you achieved it.",
+    "category": "Behavioral",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A specific, measurable goal",
+      "The plan and steps taken",
+      "The result and reflection"
+    ]
+  },
+  {
+    "id": "q029",
+    "question": "Describe a time you took initiative on a project without being asked.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "The situation that prompted initiative",
+      "The specific action taken",
+      "The impact it had"
+    ]
+  },
+  {
+    "id": "q030",
+    "question": "Tell me about a time you disagreed with a decision made by a professor or manager.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Respectful expression of disagreement",
+      "How the concern was communicated",
+      "The eventual outcome"
+    ]
+  },
+  {
+    "id": "q031",
+    "question": "Describe a situation where you had to persuade others to see things your way.",
+    "category": "Behavioral",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "The approach used to persuade",
+      "Evidence or reasoning presented",
+      "The result of the persuasion attempt"
+    ]
+  },
+  {
+    "id": "q032",
+    "question": "Tell me about a time you received difficult or critical feedback. How did you respond?",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Openness to receiving the feedback",
+      "Specific action taken in response",
+      "Improvement or change demonstrated afterward"
+    ]
+  },
+  {
+    "id": "q033",
+    "question": "Describe a time you had to juggle multiple responsibilities at once.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Organization method used",
+      "Tools or systems relied on",
+      "The outcome of managing everything"
+    ]
+  },
+  {
+    "id": "q034",
+    "question": "Tell me about your most challenging academic or personal project.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "What made it challenging",
+      "The approach taken to solve it",
+      "The result and key learnings"
+    ]
+  },
+  {
+    "id": "q035",
+    "question": "Give an example of when you went above and beyond what was expected.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "The baseline expectation",
+      "The extra effort made",
+      "The impact of that effort"
+    ]
+  },
+  {
+    "id": "q036",
+    "question": "Describe a time you had to work with someone whose working style was very different from yours.",
+    "category": "Behavioral",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "The difference in styles",
+      "How the candidate adapted",
+      "The outcome of the collaboration"
+    ]
+  },
+  {
+    "id": "q037",
+    "question": "Tell me about a time you had to make a decision without having all the information.",
+    "category": "Behavioral",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "The reasoning process used",
+      "How risk was assessed",
+      "The outcome of the decision"
+    ]
+  },
+  {
+    "id": "q038",
+    "question": "Describe how you handled a situation where you didn't understand a task's instructions.",
+    "category": "Behavioral",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Willingness to ask clarifying questions",
+      "Resourcefulness in figuring it out",
+      "The eventual outcome"
+    ]
+  },
+  {
+    "id": "q039",
+    "question": "Tell me about a time you helped a struggling teammate or classmate.",
+    "category": "Behavioral",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Recognizing the teammate's struggle",
+      "The specific support provided",
+      "The result for the teammate or team"
+    ]
+  },
+  {
+    "id": "q040",
+    "question": "Describe a time you managed a project from start to finish.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Planning and scoping done upfront",
+      "Execution and how obstacles were handled",
+      "Final delivery and outcome"
+    ]
+  },
+  {
+    "id": "q041",
+    "question": "Tell me about a time you had to adapt to a significant change.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Nature of the change",
+      "The adaptation strategy used",
+      "The outcome after adapting"
+    ]
+  },
+  {
+    "id": "q042",
+    "question": "Describe a leadership experience, even if you weren't in a formal leadership role.",
+    "category": "Behavioral",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "The situation requiring leadership",
+      "Specific actions taken to lead or influence others",
+      "The impact on the team or outcome"
+    ]
+  },
+  {
+    "id": "q043",
+    "question": "Tell me about a time you had to convince a skeptical teammate or stakeholder of your idea.",
+    "category": "Behavioral",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Understanding of the other person's concerns",
+      "Evidence or reasoning used to persuade",
+      "The eventual outcome"
+    ]
+  },
+  {
+    "id": "q044",
+    "question": "Describe a time you had to work with minimal supervision.",
+    "category": "Behavioral",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "How self-direction and accountability were maintained",
+      "Specific actions taken independently",
+      "The result achieved"
+    ]
+  },
+  {
+    "id": "q045",
+    "question": "What is the difference between JDK, JRE, and JVM?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "JVM executes bytecode; JRE provides runtime libraries plus JVM",
+      "JDK includes JRE plus development tools (compiler, debugger)",
+      "Correct layering/relationship between the three"
+    ]
+  },
+  {
+    "id": "q046",
+    "question": "What are the main principles of OOP and how does Java implement them?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Encapsulation, inheritance, polymorphism, abstraction defined",
+      "Java-specific mechanisms for each (classes, extends, overriding, interfaces/abstract classes)"
+    ]
+  },
+  {
+    "id": "q047",
+    "question": "What is the difference between == and .equals() in Java?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "== compares references (or primitive values) while .equals() compares logical content",
+      "Example showing two equal-content but different-reference objects"
+    ]
+  },
+  {
+    "id": "q048",
+    "question": "Explain method overloading vs method overriding.",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Overloading: same name, different parameters, compile-time (static) polymorphism",
+      "Overriding: subclass redefines superclass method, runtime (dynamic) polymorphism"
+    ]
+  },
+  {
+    "id": "q049",
+    "question": "What is the difference between an abstract class and an interface?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Abstract classes can have state and partial implementation; interfaces define contracts",
+      "Multiple interface inheritance vs single class inheritance",
+      "When to use each"
+    ]
+  },
+  {
+    "id": "q050",
+    "question": "What are the access modifiers in Java?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "public, protected, default (package-private), private",
+      "Visibility scope of each"
+    ]
+  },
+  {
+    "id": "q051",
+    "question": "Explain exception handling in Java using try-catch-finally.",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "try block for risky code, catch for handling specific exceptions",
+      "finally always executes for cleanup",
+      "Purpose of the exception hierarchy"
+    ]
+  },
+  {
+    "id": "q052",
+    "question": "What is the difference between checked and unchecked exceptions?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Checked exceptions must be declared/caught at compile time (e.g., IOException)",
+      "Unchecked exceptions extend RuntimeException and aren't enforced at compile time",
+      "Example of each"
+    ]
+  },
+  {
+    "id": "q053",
+    "question": "What is the Java Collections Framework? Name a few key interfaces.",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Unified architecture for storing and manipulating groups of objects",
+      "Key interfaces: List, Set, Map, Queue",
+      "When to use each broadly"
+    ]
+  },
+  {
+    "id": "q054",
+    "question": "What is the difference between ArrayList and LinkedList?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "ArrayList backed by a dynamic array with fast random access",
+      "LinkedList backed by nodes with fast insertion/deletion",
+      "Trade-offs for common operations"
+    ]
+  },
+  {
+    "id": "q055",
+    "question": "What is the difference between HashMap and Hashtable?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "HashMap is not synchronized and allows one null key; Hashtable is synchronized and disallows nulls",
+      "Performance implications of synchronization"
+    ]
+  },
+  {
+    "id": "q056",
+    "question": "Explain multithreading in Java and how to create a thread.",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Concept of concurrent execution via threads",
+      "Two ways to create a thread: extending Thread or implementing Runnable",
+      "Basic thread lifecycle awareness"
+    ]
+  },
+  {
+    "id": "q057",
+    "question": "What is garbage collection in Java?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Automatic memory management that reclaims unreachable objects",
+      "Developer doesn't manually free memory like in C/C++"
+    ]
+  },
+  {
+    "id": "q058",
+    "question": "What are constructors in Java? Can a constructor be private?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Special methods used to initialize objects",
+      "Yes, private constructors are valid (e.g., singleton pattern)",
+      "Default constructor behavior"
+    ]
+  },
+  {
+    "id": "q059",
+    "question": "What is the significance of the 'static' keyword?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Belongs to the class rather than any instance",
+      "Shared across all objects; can be used on fields, methods, blocks, nested classes"
+    ]
+  },
+  {
+    "id": "q060",
+    "question": "What is the significance of the 'final' keyword?",
+    "category": "Java",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "final variable cannot be reassigned",
+      "final method cannot be overridden",
+      "final class cannot be subclassed"
+    ]
+  },
+  {
+    "id": "q061",
+    "question": "Explain the concept of Java Streams introduced in Java 8.",
+    "category": "Java",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Streams provide a functional, declarative way to process collections",
+      "Intermediate vs terminal operations (map, filter, collect)",
+      "Benefits over traditional loops"
+    ]
+  },
+  {
+    "id": "q062",
+    "question": "What is dependency injection and how is it used in frameworks like Spring?",
+    "category": "Java",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Inversion of control: dependencies provided rather than created internally",
+      "Improves testability and decoupling",
+      "How Spring's container wires beans"
+    ]
+  },
+  {
+    "id": "q063",
+    "question": "What is the difference between String, StringBuilder, and StringBuffer?",
+    "category": "Java",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "String is immutable; StringBuilder and StringBuffer are mutable",
+      "StringBuffer is synchronized (thread-safe), StringBuilder is not",
+      "When to prefer each for performance"
+    ]
+  },
+  {
+    "id": "q064",
+    "question": "What are functional interfaces and lambda expressions in Java?",
+    "category": "Java",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Functional interface has exactly one abstract method (e.g., Runnable, Comparator)",
+      "Lambda expressions provide a concise syntax to implement them",
+      "Example use case"
+    ]
+  },
+  {
+    "id": "q065",
+    "question": "What are Python's key features that make it popular?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Readable syntax, dynamic typing, interpreted language",
+      "Large standard library and ecosystem",
+      "Cross-platform and versatile (web, data science, scripting)"
+    ]
+  },
+  {
+    "id": "q066",
+    "question": "What is the difference between a list and a tuple in Python?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Lists are mutable, tuples are immutable",
+      "Performance and use-case differences (tuples as fixed records)"
+    ]
+  },
+  {
+    "id": "q067",
+    "question": "What are Python dictionaries and how do they work internally?",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Key-value store implemented via a hash table",
+      "O(1) average lookup via hashing of keys",
+      "Keys must be hashable/immutable"
+    ]
+  },
+  {
+    "id": "q068",
+    "question": "Explain the difference between a deep copy and a shallow copy.",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Shallow copy duplicates the outer object but shares nested references",
+      "Deep copy recursively duplicates all nested objects",
+      "When each could cause bugs"
+    ]
+  },
+  {
+    "id": "q069",
+    "question": "What are *args and **kwargs used for?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "*args collects extra positional arguments into a tuple",
+      "**kwargs collects extra keyword arguments into a dict",
+      "Used for flexible function signatures"
+    ]
+  },
+  {
+    "id": "q070",
+    "question": "What is a lambda function? Give an example.",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Anonymous, single-expression function",
+      "Common use with map/filter/sorted",
+      "Limitations compared to a regular function"
+    ]
+  },
+  {
+    "id": "q071",
+    "question": "Explain list comprehensions with an example.",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Concise syntax for building lists from an iterable",
+      "Optional filtering condition",
+      "Readability/performance benefit over explicit loops"
+    ]
+  },
+  {
+    "id": "q072",
+    "question": "What is the Global Interpreter Lock (GIL)?",
+    "category": "Python",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "A mutex that allows only one thread to execute Python bytecode at a time",
+      "Impact on CPU-bound multithreading performance",
+      "Workarounds (multiprocessing, C extensions releasing the GIL)"
+    ]
+  },
+  {
+    "id": "q073",
+    "question": "What is the difference between 'is' and '==' in Python?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "'is' checks identity (same object in memory)",
+      "'==' checks value equality",
+      "Example where two equal values are different objects"
+    ]
+  },
+  {
+    "id": "q074",
+    "question": "What are decorators in Python?",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Functions that wrap another function to extend its behavior",
+      "Use of @syntax",
+      "Common use cases (logging, timing, access control)"
+    ]
+  },
+  {
+    "id": "q075",
+    "question": "Explain generators and the yield keyword.",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Functions that produce a lazy iterator using yield",
+      "Memory efficiency vs returning a full list",
+      "State is preserved between calls"
+    ]
+  },
+  {
+    "id": "q076",
+    "question": "How does exception handling work in Python (try/except/finally)?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "try block wraps risky code, except handles specific exception types",
+      "finally always runs for cleanup",
+      "else clause runs if no exception occurred"
+    ]
+  },
+  {
+    "id": "q077",
+    "question": "What is the difference between a module and a package in Python?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A module is a single .py file",
+      "A package is a directory of modules with an __init__.py",
+      "Import implications of each"
+    ]
+  },
+  {
+    "id": "q078",
+    "question": "What are Python's built-in data types?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Numeric types (int, float, complex), str, bool",
+      "Collections: list, tuple, dict, set",
+      "None type"
+    ]
+  },
+  {
+    "id": "q079",
+    "question": "Explain object-oriented programming concepts in Python: class, inheritance, polymorphism.",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Class as a blueprint for objects",
+      "Inheritance for code reuse via subclassing",
+      "Polymorphism through method overriding/duck typing"
+    ]
+  },
+  {
+    "id": "q080",
+    "question": "What is the difference between @staticmethod and @classmethod?",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "staticmethod takes no implicit first argument, behaves like a plain function",
+      "classmethod takes cls as first argument and can access/modify class state",
+      "Typical use cases for each"
+    ]
+  },
+  {
+    "id": "q081",
+    "question": "How does memory management work in Python?",
+    "category": "Python",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Reference counting as the primary mechanism",
+      "Cyclic garbage collector for reference cycles",
+      "Memory pools/allocators for small objects"
+    ]
+  },
+  {
+    "id": "q082",
+    "question": "What are context managers and the 'with' statement used for?",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Ensures setup/teardown (e.g., closing files) happens automatically",
+      "Implemented via __enter__ and __exit__",
+      "Common example: file handling"
+    ]
+  },
+  {
+    "id": "q083",
+    "question": "Explain the difference between mutable and immutable objects with examples.",
+    "category": "Python",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Mutable objects can change in place (list, dict, set)",
+      "Immutable objects cannot change after creation (int, str, tuple)",
+      "Implication for function arguments and hashing"
+    ]
+  },
+  {
+    "id": "q084",
+    "question": "What is PEP 8 and why does it matter?",
+    "category": "Python",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Python's official style guide",
+      "Improves readability and consistency across codebases",
+      "Examples: naming conventions, indentation"
+    ]
+  },
+  {
+    "id": "q085",
+    "question": "What is the difference between SQL and NoSQL databases?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "SQL: relational, fixed schema, ACID transactions",
+      "NoSQL: flexible schema, horizontally scalable, varied data models",
+      "When each is appropriate"
+    ]
+  },
+  {
+    "id": "q086",
+    "question": "What is a primary key vs a foreign key?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Primary key uniquely identifies a row in its own table",
+      "Foreign key references a primary key in another table",
+      "Role in maintaining referential integrity"
+    ]
+  },
+  {
+    "id": "q087",
+    "question": "Explain the different types of JOINs in SQL.",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "INNER JOIN returns matching rows only",
+      "LEFT/RIGHT JOIN includes unmatched rows from one side",
+      "FULL OUTER JOIN includes unmatched rows from both sides"
+    ]
+  },
+  {
+    "id": "q088",
+    "question": "What is normalization? Explain 1NF, 2NF, and 3NF briefly.",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Goal of reducing redundancy and avoiding anomalies",
+      "1NF: atomic columns, no repeating groups",
+      "2NF/3NF: removing partial and transitive dependencies"
+    ]
+  },
+  {
+    "id": "q089",
+    "question": "What is the difference between WHERE and HAVING clauses?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "WHERE filters rows before grouping",
+      "HAVING filters groups after GROUP BY/aggregation"
+    ]
+  },
+  {
+    "id": "q090",
+    "question": "What is an index and how does it improve query performance?",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A data structure (often B-tree) that speeds up lookups",
+      "Trade-off: faster reads, slower writes and extra storage"
+    ]
+  },
+  {
+    "id": "q091",
+    "question": "What is the difference between DELETE, TRUNCATE, and DROP?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "DELETE removes rows conditionally and can be rolled back (logged)",
+      "TRUNCATE removes all rows quickly, minimal logging",
+      "DROP removes the entire table structure"
+    ]
+  },
+  {
+    "id": "q092",
+    "question": "What is a subquery? Give an example use case.",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A query nested inside another query",
+      "Can be used in SELECT, WHERE, or FROM clauses",
+      "Example: filtering based on an aggregate from another table"
+    ]
+  },
+  {
+    "id": "q093",
+    "question": "Explain the ACID properties in databases.",
+    "category": "SQL",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Atomicity: all-or-nothing transactions",
+      "Consistency: valid state transitions",
+      "Isolation: concurrent transactions don't interfere",
+      "Durability: committed data survives failures"
+    ]
+  },
+  {
+    "id": "q094",
+    "question": "What is a stored procedure?",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Precompiled set of SQL statements stored in the database",
+      "Benefits: reusability, reduced network traffic, encapsulated logic"
+    ]
+  },
+  {
+    "id": "q095",
+    "question": "What is the difference between UNION and UNION ALL?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "UNION removes duplicate rows from the combined result",
+      "UNION ALL keeps duplicates and is generally faster"
+    ]
+  },
+  {
+    "id": "q096",
+    "question": "What are aggregate functions? Name a few.",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Functions that operate over a set of rows to return a single value",
+      "Examples: COUNT, SUM, AVG, MIN, MAX"
+    ]
+  },
+  {
+    "id": "q097",
+    "question": "What is a self-join and when would you use it?",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A table joined with itself using aliases",
+      "Use case: comparing rows within the same table (e.g., employee-manager)"
+    ]
+  },
+  {
+    "id": "q098",
+    "question": "Explain the difference between clustered and non-clustered indexes.",
+    "category": "SQL",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Clustered index determines the physical order of data (one per table)",
+      "Non-clustered index is a separate structure pointing to the data",
+      "Performance implications for reads and writes"
+    ]
+  },
+  {
+    "id": "q099",
+    "question": "What is denormalization and when would you use it?",
+    "category": "SQL",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Intentionally introducing redundancy to improve read performance",
+      "Trade-off between query speed and data consistency",
+      "Common in reporting/analytics systems"
+    ]
+  },
+  {
+    "id": "q100",
+    "question": "What is a view in SQL and why would you use one?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A virtual table defined by a stored query",
+      "Simplifies complex queries and can restrict access to underlying data"
+    ]
+  },
+  {
+    "id": "q101",
+    "question": "How would you find duplicate records in a table?",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "GROUP BY the relevant columns with HAVING COUNT(*) > 1",
+      "Alternative using window functions like ROW_NUMBER()"
+    ]
+  },
+  {
+    "id": "q102",
+    "question": "What are common SQL constraints (NOT NULL, UNIQUE, CHECK, etc.)?",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT",
+      "Purpose of enforcing data integrity at the schema level"
+    ]
+  },
+  {
+    "id": "q103",
+    "question": "Explain the GROUP BY clause with an example.",
+    "category": "SQL",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Groups rows sharing a column value to apply aggregate functions",
+      "Example: total sales per region"
+    ]
+  },
+  {
+    "id": "q104",
+    "question": "What is a transaction, and how do COMMIT and ROLLBACK work?",
+    "category": "SQL",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A transaction is a sequence of operations treated as a single unit",
+      "COMMIT saves changes permanently",
+      "ROLLBACK undoes changes if something fails"
+    ]
+  },
+  {
+    "id": "q105",
+    "question": "What is the difference between supervised and unsupervised learning?",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Supervised learning uses labeled data to predict outcomes",
+      "Unsupervised learning finds patterns/structure in unlabeled data",
+      "Example algorithms for each"
+    ]
+  },
+  {
+    "id": "q106",
+    "question": "What is overfitting and how can you prevent it?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Model learns noise/specifics of training data, hurting generalization",
+      "Prevention: regularization, cross-validation, more data, simpler models",
+      "Signs of overfitting (train vs validation gap)"
+    ]
+  },
+  {
+    "id": "q107",
+    "question": "Explain the bias-variance tradeoff.",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Bias: error from overly simplistic assumptions (underfitting)",
+      "Variance: error from sensitivity to training data (overfitting)",
+      "Goal of balancing both for best generalization"
+    ]
+  },
+  {
+    "id": "q108",
+    "question": "What is the difference between classification and regression?",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Classification predicts discrete categories/labels",
+      "Regression predicts continuous numeric values",
+      "Example use cases for each"
+    ]
+  },
+  {
+    "id": "q109",
+    "question": "What is cross-validation and why is it used?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Splitting data into multiple folds to validate model performance",
+      "Reduces reliance on a single train/test split",
+      "Gives a more robust estimate of generalization"
+    ]
+  },
+  {
+    "id": "q110",
+    "question": "Explain how a decision tree works.",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Recursively splits data on features that best separate classes/values",
+      "Splitting criteria like Gini impurity or information gain",
+      "Prone to overfitting without pruning/depth limits"
+    ]
+  },
+  {
+    "id": "q111",
+    "question": "What is gradient descent?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "An optimization algorithm that iteratively updates parameters",
+      "Moves in the direction of steepest descent of the loss function",
+      "Role of the learning rate"
+    ]
+  },
+  {
+    "id": "q112",
+    "question": "What are precision, recall, and F1-score?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Precision: proportion of predicted positives that are correct",
+      "Recall: proportion of actual positives correctly identified",
+      "F1-score: harmonic mean balancing precision and recall"
+    ]
+  },
+  {
+    "id": "q113",
+    "question": "What is regularization? Explain L1 vs L2.",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Technique to penalize model complexity and reduce overfitting",
+      "L1 (Lasso) can shrink coefficients to zero (feature selection)",
+      "L2 (Ridge) shrinks coefficients smoothly without zeroing them"
+    ]
+  },
+  {
+    "id": "q114",
+    "question": "Explain the difference between bagging and boosting.",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Bagging trains models in parallel on bootstrapped samples to reduce variance",
+      "Boosting trains models sequentially, each correcting prior errors, to reduce bias",
+      "Examples: Random Forest (bagging) vs XGBoost (boosting)"
+    ]
+  },
+  {
+    "id": "q115",
+    "question": "What is feature scaling and why is it needed?",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Normalizing/standardizing features to a common range",
+      "Important for distance-based or gradient-based algorithms",
+      "Example: StandardScaler or Min-Max scaling"
+    ]
+  },
+  {
+    "id": "q116",
+    "question": "What is a confusion matrix?",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Table showing true/false positives and negatives",
+      "Basis for computing accuracy, precision, recall"
+    ]
+  },
+  {
+    "id": "q117",
+    "question": "Explain the k-nearest neighbors (KNN) algorithm.",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Classifies/predicts based on the majority/average of k nearest points",
+      "Choice of k and distance metric matters",
+      "Computationally expensive at prediction time"
+    ]
+  },
+  {
+    "id": "q118",
+    "question": "What is the curse of dimensionality?",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "As dimensions increase, data becomes sparse and distances less meaningful",
+      "Can degrade model performance and increase computation",
+      "Mitigations: dimensionality reduction (PCA), feature selection"
+    ]
+  },
+  {
+    "id": "q119",
+    "question": "What is a neural network and how does it learn via backpropagation?",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Layers of interconnected neurons with weighted connections",
+      "Forward pass computes predictions, loss is calculated",
+      "Backpropagation computes gradients to update weights via gradient descent"
+    ]
+  },
+  {
+    "id": "q120",
+    "question": "What is the difference between a parametric and a non-parametric model?",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Parametric models assume a fixed functional form with finite parameters",
+      "Non-parametric models grow in complexity with data (e.g., KNN, decision trees)",
+      "Trade-off in flexibility vs data requirements"
+    ]
+  },
+  {
+    "id": "q121",
+    "question": "What is feature engineering and why does it matter?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Creating/transforming features to improve model performance",
+      "Domain knowledge often drives useful features",
+      "Can matter more than model choice for tabular data"
+    ]
+  },
+  {
+    "id": "q122",
+    "question": "Explain the train-test split and why validation sets are important.",
+    "category": "Machine Learning",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Splitting data to evaluate generalization on unseen data",
+      "Validation set used for tuning without touching the test set",
+      "Prevents overly optimistic performance estimates"
+    ]
+  },
+  {
+    "id": "q123",
+    "question": "What evaluation metric would you use for an imbalanced classification problem?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Avoid plain accuracy due to majority-class bias",
+      "Prefer precision, recall, F1-score, or ROC-AUC/PR-AUC",
+      "Consider resampling or class weighting techniques"
+    ]
+  },
+  {
+    "id": "q124",
+    "question": "What is the difference between batch gradient descent and stochastic gradient descent?",
+    "category": "Machine Learning",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Batch GD uses the whole dataset per update; SGD uses one sample (or mini-batch) at a time",
+      "SGD is noisier but faster per step and can escape local minima",
+      "Mini-batch GD as a common middle ground"
+    ]
+  },
+  {
+    "id": "q125",
+    "question": "What is transfer learning?",
+    "category": "Machine Learning",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Reusing a model pretrained on one task/dataset for a related task",
+      "Saves training time and data requirements",
+      "Common in deep learning (e.g., fine-tuning pretrained image/language models)"
+    ]
+  },
+  {
+    "id": "q126",
+    "question": "What is cloud computing and what are its main service models (IaaS, PaaS, SaaS)?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "On-demand delivery of computing resources over the internet",
+      "IaaS: raw infrastructure, PaaS: managed platform, SaaS: ready-to-use software",
+      "Example of each"
+    ]
+  },
+  {
+    "id": "q127",
+    "question": "What is Amazon EC2 and what is it used for?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Elastic Compute Cloud provides resizable virtual servers",
+      "Used to host applications, run workloads on demand",
+      "Pay-as-you-go pricing model"
+    ]
+  },
+  {
+    "id": "q128",
+    "question": "What is Amazon S3 and what are common use cases?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Object storage service for storing/retrieving any amount of data",
+      "Use cases: backups, static website hosting, data lakes"
+    ]
+  },
+  {
+    "id": "q129",
+    "question": "What is the difference between AWS Lambda and EC2?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Lambda is serverless, event-driven, pay-per-execution",
+      "EC2 requires managing a persistent virtual server",
+      "Trade-offs in control vs operational overhead"
+    ]
+  },
+  {
+    "id": "q130",
+    "question": "What is an AWS VPC?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Virtual Private Cloud: an isolated network environment within AWS",
+      "Allows control over IP ranges, subnets, routing, and security"
+    ]
+  },
+  {
+    "id": "q131",
+    "question": "What is IAM in AWS and why is it important?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Identity and Access Management controls who can access what",
+      "Supports users, groups, roles, and fine-grained policies",
+      "Principle of least privilege"
+    ]
+  },
+  {
+    "id": "q132",
+    "question": "What is the difference between horizontal and vertical scaling?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Horizontal scaling adds more machines/instances",
+      "Vertical scaling increases the resources of an existing machine",
+      "Trade-offs of each approach"
+    ]
+  },
+  {
+    "id": "q133",
+    "question": "What is Auto Scaling in AWS?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Automatically adjusts the number of instances based on demand",
+      "Helps with cost efficiency and availability",
+      "Works with scaling policies and thresholds"
+    ]
+  },
+  {
+    "id": "q134",
+    "question": "What is a load balancer and why is it used?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Distributes incoming traffic across multiple instances",
+      "Improves availability, fault tolerance, and scalability"
+    ]
+  },
+  {
+    "id": "q135",
+    "question": "What is the difference between RDS and DynamoDB?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "RDS is a managed relational database service (SQL)",
+      "DynamoDB is a managed NoSQL key-value/document database",
+      "Choice depends on schema flexibility and scale needs"
+    ]
+  },
+  {
+    "id": "q136",
+    "question": "What is a CDN and how does Amazon CloudFront use it?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Content Delivery Network caches content closer to users",
+      "CloudFront reduces latency by serving from edge locations"
+    ]
+  },
+  {
+    "id": "q137",
+    "question": "What are AWS regions and availability zones?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Regions are separate geographic areas",
+      "Availability zones are isolated data centers within a region",
+      "Used together for high availability and disaster recovery"
+    ]
+  },
+  {
+    "id": "q138",
+    "question": "What is Infrastructure as Code, and how do tools like CloudFormation or Terraform help?",
+    "category": "AWS/Cloud",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Managing infrastructure through machine-readable configuration files",
+      "Enables version control, repeatability, and automation",
+      "Reduces manual configuration drift"
+    ]
+  },
+  {
+    "id": "q139",
+    "question": "What is the shared responsibility model in cloud security?",
+    "category": "AWS/Cloud",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Cloud provider secures the infrastructure ('of the cloud')",
+      "Customer secures their data, access, and configurations ('in the cloud')",
+      "Varies slightly by service model (IaaS vs PaaS vs SaaS)"
+    ]
+  },
+  {
+    "id": "q140",
+    "question": "What is serverless computing?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Running code without provisioning or managing servers directly",
+      "Automatic scaling and pay-per-use billing",
+      "Example: AWS Lambda"
+    ]
+  },
+  {
+    "id": "q141",
+    "question": "What is Amazon CloudWatch used for?",
+    "category": "AWS/Cloud",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Monitoring service for metrics, logs, and alarms",
+      "Helps track application/infrastructure health and set alerts"
+    ]
+  },
+  {
+    "id": "q142",
+    "question": "What is the difference between S3 storage classes like Standard and Glacier?",
+    "category": "AWS/Cloud",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Standard is for frequently accessed data with low latency",
+      "Glacier is for infrequent access/archival at lower cost with retrieval delay",
+      "Choice depends on access frequency and cost trade-offs"
+    ]
+  },
+  {
+    "id": "q143",
+    "question": "What is the difference between HTML, CSS, and JavaScript?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "HTML defines structure/content",
+      "CSS defines presentation/styling",
+      "JavaScript adds interactivity and behavior"
+    ]
+  },
+  {
+    "id": "q144",
+    "question": "What is the DOM?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Document Object Model: a tree representation of the HTML page",
+      "JavaScript can read/manipulate it to update the page dynamically"
+    ]
+  },
+  {
+    "id": "q145",
+    "question": "What is the difference between GET and POST HTTP methods?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "GET retrieves data, typically idempotent, parameters in the URL",
+      "POST submits data, often changes server state, data in the request body"
+    ]
+  },
+  {
+    "id": "q146",
+    "question": "What is REST and what makes an API RESTful?",
+    "category": "Web Development",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Representational State Transfer: an architectural style for APIs",
+      "Statelessness, resource-based URLs, standard HTTP methods",
+      "Uniform interface and cacheability"
+    ]
+  },
+  {
+    "id": "q147",
+    "question": "What is the difference between frontend and backend development?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Frontend: client-side UI/UX the user interacts with",
+      "Backend: server-side logic, databases, and APIs"
+    ]
+  },
+  {
+    "id": "q148",
+    "question": "Explain the CSS box model.",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Content, padding, border, and margin layers",
+      "How box-sizing affects total element size"
+    ]
+  },
+  {
+    "id": "q149",
+    "question": "What is responsive web design?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Layouts that adapt to different screen sizes/devices",
+      "Techniques: media queries, flexible grids, relative units"
+    ]
+  },
+  {
+    "id": "q150",
+    "question": "What is the difference between synchronous and asynchronous JavaScript?",
+    "category": "Web Development",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Synchronous code runs sequentially, blocking further execution",
+      "Asynchronous code (callbacks, promises, async/await) allows non-blocking operations",
+      "Role of the event loop"
+    ]
+  },
+  {
+    "id": "q151",
+    "question": "What are cookies, sessions, and local storage used for?",
+    "category": "Web Development",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Cookies: small data sent with every request, used for state/auth",
+      "Sessions: server-side state tied to a session ID",
+      "Local storage: client-side persistent storage without server round-trips"
+    ]
+  },
+  {
+    "id": "q152",
+    "question": "What is CORS and why does it matter?",
+    "category": "Web Development",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "Cross-Origin Resource Sharing: a browser security mechanism",
+      "Controls which origins can access a server's resources",
+      "Prevents malicious cross-site requests by default"
+    ]
+  },
+  {
+    "id": "q153",
+    "question": "What is the benefit of using an ORM instead of raw SQL queries?",
+    "category": "Web Development",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "Maps database rows to objects in code, improving productivity",
+      "Reduces boilerplate and some injection risk",
+      "Trade-off: less fine-grained control over queries"
+    ]
+  },
+  {
+    "id": "q154",
+    "question": "What are common HTTP status codes and what do they mean?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "2xx success (200 OK, 201 Created)",
+      "4xx client errors (400, 401, 404)",
+      "5xx server errors (500)"
+    ]
+  },
+  {
+    "id": "q155",
+    "question": "What is the difference between a framework and a library?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "A library is called by your code; a framework calls your code (inversion of control)",
+      "Example: React/jQuery as libraries vs Angular/Django as frameworks"
+    ]
+  },
+  {
+    "id": "q156",
+    "question": "What is server-side rendering vs client-side rendering?",
+    "category": "Web Development",
+    "difficulty": "hard",
+    "what_good_answer_covers": [
+      "SSR renders HTML on the server before sending to the browser",
+      "CSR renders content in the browser using JavaScript after initial load",
+      "Trade-offs: SEO/initial load speed vs interactivity"
+    ]
+  },
+  {
+    "id": "q157",
+    "question": "What is JSON and why is it commonly used in APIs?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Lightweight, human-readable data interchange format",
+      "Language-independent and easy to parse",
+      "Widely supported by web APIs and JavaScript natively"
+    ]
+  },
+  {
+    "id": "q158",
+    "question": "What is a package manager like npm or pip used for?",
+    "category": "Web Development",
+    "difficulty": "easy",
+    "what_good_answer_covers": [
+      "Installing, updating, and managing project dependencies",
+      "Handles versioning and dependency resolution"
+    ]
+  },
+  {
+    "id": "q159",
+    "question": "What is a webhook?",
+    "category": "Web Development",
+    "difficulty": "medium",
+    "what_good_answer_covers": [
+      "A user-defined HTTP callback triggered by an event",
+      "Allows one system to notify another in near real-time",
+      "Contrast with polling for updates"
+    ]
+  }
+]
