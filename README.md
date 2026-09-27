@@ -11,7 +11,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 | 1 | Setup: structure, config, Groq LLM client | ✅ Done |
 | 2 | Question bank RAG | ✅ Done |
 | 3 | Resume RAG + resume-based questions | ✅ Done |
-| 4 | Speech-to-text (Groq Whisper) | ⬜ |
+| 4 | Speech-to-text (Groq Whisper) | ✅ Done |
 | 5 | Speech feature extraction | ⬜ |
 | 6 | ML fluency model | ⬜ |
 | 7 | LLM feedback engine | ⬜ |
@@ -37,3 +37,12 @@ structured output (Pydantic) to pull out name/skills/projects/education/
 certifications, and `generate_resume_questions(profile, n)` generates personalized
 questions that each cite the resume section they came from and are filtered to
 drop anything not grounded in the actual profile.
+
+`src/speech.py` transcribes spoken answers with Groq's hosted Whisper API:
+`transcribe(audio)` accepts raw bytes or a file path (wav/mp3/m4a/webm),
+validates format, size, and minimum duration up front with friendly error
+messages, retries automatically with backoff on rate limits (HTTP 429), and
+returns a `Transcript` (text, word-level timestamps, duration, language).
+`src/tts.py` provides `speak(text)`, which synthesizes speech with gTTS and
+caches clips on disk (keyed by text + language) so repeated interview
+questions are never regenerated.

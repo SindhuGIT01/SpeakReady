@@ -23,6 +23,9 @@ audio/
 *.flac
 *.webm
 
+# Sample audio fixture (kept for tests)
+!tests/fixtures/*.mp3
+
 # User resumes (keep folder only)
 data/resumes/*
 !data/resumes/.gitkeep

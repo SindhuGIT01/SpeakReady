@@ -40,6 +40,11 @@ LLM_MAX_RETRIES: int = int(os.getenv("LLM_MAX_RETRIES", "2"))
 # --- Speech ------------------------------------------------------------------
 WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "whisper-large-v3-turbo")
 TTS_LANGUAGE: str = os.getenv("TTS_LANGUAGE", "en")
+SUPPORTED_AUDIO_FORMATS: frozenset[str] = frozenset({".wav", ".mp3", ".m4a", ".webm"})
+MAX_AUDIO_SIZE_MB: float = float(os.getenv("MAX_AUDIO_SIZE_MB", "25"))
+MIN_AUDIO_DURATION_SECONDS: float = float(os.getenv("MIN_AUDIO_DURATION_SECONDS", "2.0"))
+WHISPER_MAX_RETRIES: int = int(os.getenv("WHISPER_MAX_RETRIES", "3"))
+WHISPER_RETRY_BASE_SECONDS: float = float(os.getenv("WHISPER_RETRY_BASE_SECONDS", "1.0"))
 
 # --- RAG ---------------------------------------------------------------------
 EMBEDDING_MODEL: str = os.getenv(
