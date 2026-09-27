@@ -26,7 +26,11 @@ DB_PATH: Path = PROJECT_ROOT / "speakready.db"
 FLUENCY_MODEL_PATH: Path = MODELS_DIR / "fluency_model.joblib"
 
 # --- API keys ----------------------------------------------------------------
-GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY") or None
+_GROQ_KEY_PLACEHOLDER = "your_groq_api_key_here"
+_raw_groq_key = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_API_KEY: str | None = (
+    _raw_groq_key if _raw_groq_key and _raw_groq_key != _GROQ_KEY_PLACEHOLDER else None
+)
 
 # --- LLM ---------------------------------------------------------------------
 LLM_MODEL: str = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
