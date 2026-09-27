@@ -1,0 +1,69 @@
+"""Central configuration for SpeakReady.
+
+All settings (model names, paths, chunk sizes) live here. Values are loaded
+from a ``.env`` file at the project root via python-dotenv; secrets must never
+be hardcoded anywhere in the codebase.
+"""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# --- Paths -------------------------------------------------------------------
+PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
+
+DATA_DIR: Path = PROJECT_ROOT / "data"
+QUESTIONS_DIR: Path = DATA_DIR / "questions"
+RESUMES_DIR: Path = DATA_DIR / "resumes"
+MODELS_DIR: Path = PROJECT_ROOT / "models"
+CHROMA_DIR: Path = PROJECT_ROOT / "chroma_db"
+AUDIO_DIR: Path = PROJECT_ROOT / "audio"
+DB_PATH: Path = PROJECT_ROOT / "speakready.db"
+FLUENCY_MODEL_PATH: Path = MODELS_DIR / "fluency_model.joblib"
+
+# --- API keys ----------------------------------------------------------------
+GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY") or None
+
+# --- LLM ---------------------------------------------------------------------
+LLM_MODEL: str = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
+LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.3"))
+LLM_MAX_RETRIES: int = int(os.getenv("LLM_MAX_RETRIES", "2"))
+
+# --- Speech ------------------------------------------------------------------
+WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "whisper-large-v3-turbo")
+TTS_LANGUAGE: str = os.getenv("TTS_LANGUAGE", "en")
+
+# --- RAG ---------------------------------------------------------------------
+EMBEDDING_MODEL: str = os.getenv(
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+)
+CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "500"))
+CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "50"))
+RETRIEVER_TOP_K: int = int(os.getenv("RETRIEVER_TOP_K", "4"))
+QUESTIONS_COLLECTION: str = "question_bank"
+RESUME_COLLECTION: str = "resumes"
+
+
+class ConfigError(RuntimeError):
+    """Raised when a required setting is missing or invalid."""
+
+
+def get_groq_api_key() -> str:
+    """Return the Groq API key, failing loudly if it is not configured.
+
+    Returns:
+        The GROQ_API_KEY value from the environment or ``.env``.
+
+    Raises:
+        ConfigError: If GROQ_API_KEY is missing or empty.
+    """
+    if not GROQ_API_KEY:
+        raise ConfigError(
+            "GROQ_API_KEY is not set. Copy .env.example to .env and add your "
+            "free key from https://console.groq.com/keys"
+        )
+    return GROQ_API_KEY
