@@ -45,6 +45,9 @@ speakready/
 - Tests that hit external APIs must skip automatically when the key is missing.
 - Import project code as `from src import ...`; run commands from the project root.
 
+## Git rules
+- Do **not** add `Co-Authored-By: Claude` (or any Claude/AI attribution trailer) to commit messages.
+
 ## Commands
 - Run app: `streamlit run app.py`
 - Run tests: `python -m pytest -v`
