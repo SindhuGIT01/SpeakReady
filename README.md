@@ -12,7 +12,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 | 2 | Question bank RAG | ✅ Done |
 | 3 | Resume RAG + resume-based questions | ✅ Done |
 | 4 | Speech-to-text (Groq Whisper) | ✅ Done |
-| 5 | Speech feature extraction | ⬜ |
+| 5 | Speech feature extraction | ✅ Done |
 | 6 | ML fluency model | ⬜ |
 | 7 | LLM feedback engine | ⬜ |
 | 8 | Interview agent with follow-ups + voice (gTTS) | ⬜ |
@@ -46,3 +46,12 @@ returns a `Transcript` (text, word-level timestamps, duration, language).
 `src/tts.py` provides `speak(text)`, which synthesizes speech with gTTS and
 caches clips on disk (keyed by text + language) so repeated interview
 questions are never regenerated.
+
+`src/features.py` turns a `Transcript` into fluency features with
+`extract_features(transcript)` — speaking pace (WPM), pause count/duration,
+filler word rate (configurable list, with a heuristic to skip "like" when
+used as an ordinary verb), word repetition, vocabulary variety (type-token
+ratio), and mean sentence length. The same function is used at training time
+for the fluency model (Task 6) and in the app, so features never drift out of
+sync. `explain_features(features)` turns the numbers into plain-language
+coaching tips.

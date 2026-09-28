@@ -56,6 +56,30 @@ RETRIEVER_TOP_K: int = int(os.getenv("RETRIEVER_TOP_K", "4"))
 QUESTIONS_COLLECTION: str = "question_bank"
 RESUME_COLLECTION: str = "resumes"
 
+# --- Fluency features ---------------------------------------------------------
+PAUSE_THRESHOLD_SECONDS: float = float(os.getenv("PAUSE_THRESHOLD_SECONDS", "0.5"))
+LONG_PAUSE_THRESHOLD_SECONDS: float = float(os.getenv("LONG_PAUSE_THRESHOLD_SECONDS", "1.5"))
+# Single words and short phrases counted as filler. "like" is handled specially
+# (see src/features.py) to avoid flagging its use as an ordinary verb.
+FILLER_WORDS: tuple[str, ...] = (
+    "um",
+    "uh",
+    "umm",
+    "like",
+    "you know",
+    "basically",
+    "actually",
+    "so",
+    "i mean",
+)
+IDEAL_WPM_MIN: float = float(os.getenv("IDEAL_WPM_MIN", "130"))
+IDEAL_WPM_MAX: float = float(os.getenv("IDEAL_WPM_MAX", "160"))
+FILLER_RATE_HIGH_PER_100_WORDS: float = float(os.getenv("FILLER_RATE_HIGH_PER_100_WORDS", "5"))
+TOTAL_PAUSE_RATIO_HIGH: float = float(os.getenv("TOTAL_PAUSE_RATIO_HIGH", "0.3"))
+LOW_TYPE_TOKEN_RATIO: float = float(os.getenv("LOW_TYPE_TOKEN_RATIO", "0.4"))
+LONG_SENTENCE_WORD_COUNT: float = float(os.getenv("LONG_SENTENCE_WORD_COUNT", "30"))
+SHORT_SENTENCE_WORD_COUNT: float = float(os.getenv("SHORT_SENTENCE_WORD_COUNT", "5"))
+
 
 class ConfigError(RuntimeError):
     """Raised when a required setting is missing or invalid."""
