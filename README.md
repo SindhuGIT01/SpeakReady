@@ -16,7 +16,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 | 6 | ML fluency model | ✅ Done |
 | 7 | LLM feedback engine | ✅ Done |
 | 8 | Interview agent with follow-ups + voice (gTTS) | ✅ Done |
-| 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
+| 9 | Streamlit app + progress tracker (SQLite) | ✅ Done |
 | 10 | Tests, README, deployment | ⬜ |
 
 The question bank (`data/questions/question_bank.json`) has 159 fresher interview
@@ -148,3 +148,58 @@ with a text-only terminal demo (requires `GROQ_API_KEY`):
 ```bash
 python -m src.interview_agent --demo
 ```
+
+## The Streamlit app
+
+`app.py` is a multipage app (`st.navigation`) with a custom theme
+(`.streamlit/config.toml`) and five pages:
+
+- **Home** — what SpeakReady does, and a "Start Interview" button.
+- **Setup** — pick a target role and difficulty, choose how many questions,
+  and optionally upload a resume (PDF). The extracted profile
+  (`src/resume.py`) is shown back to you to confirm before it's used.
+- **Interview** — plays each question's TTS audio automatically, records
+  your spoken answer with `st.audio_input`, and shows a feedback card
+  (overall score, fluency label + confidence, WPM, pauses, filler count,
+  grammar corrections, an improved answer, and one tip) after each answer.
+  Follow-up questions appear inline, just like a real interviewer. A
+  progress bar tracks how far through the session you are.
+- **Report** — the finished session's summary, a per-question score chart,
+  the personalized 7-day practice plan, and a "Download report (PDF)"
+  button (`src/report.py`, built with `fpdf2`).
+- **Progress** — history across *all* past sessions from SQLite: score
+  trend, filler-word-rate trend, and speaking-pace trend (Plotly line
+  charts), plus a weakest-categories bar chart.
+
+Shared Streamlit session-state/caching glue (not business logic) lives in
+`app_common.py` at the project root, kept separate from `src/` per the
+project's coding rules.
+
+No API key is ever shown in the UI — `app_common.get_llm_cached()` reads it
+the same way the rest of the app does, via `config.get_groq_api_key()`.
+Friendly error messages (not raw tracebacks) are shown for missing/invalid
+audio, API/config errors, and unreadable resumes.
+
+### Screenshots
+
+<!-- TODO: replace with real screenshots once you've run the app locally -->
+
+| Home | Setup | Interview |
+|---|---|---|
+| ![Home page](docs/screenshots/home.png) | ![Setup page](docs/screenshots/setup.png) | ![Interview page](docs/screenshots/interview.png) |
+
+| Report | Progress |
+|---|---|
+| ![Report page](docs/screenshots/report.png) | ![Progress page](docs/screenshots/progress.png) |
+
+### Running the app
+
+```bash
+streamlit run app.py
+```
+
+The first run embeds the question bank into Chroma and loads the local
+sentence-transformers embedding model, so it can take 20-30 seconds before
+the Home page appears — subsequent runs are fast. Requires `GROQ_API_KEY`
+in `.env` (copy `.env.example`); without it, Setup and Interview show a
+friendly error instead of a traceback.

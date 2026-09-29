@@ -1,5 +1,7 @@
 # UI
 streamlit~=1.64
+plotly~=6.5
+fpdf2~=2.8
 
 # LLM + RAG
 langchain~=1.4
