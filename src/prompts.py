@@ -81,3 +81,106 @@ def build_feedback_user_prompt(
         )
 
     return "\n\n".join(sections)
+
+
+# --- Interview agent: follow-up decisions (Task 8) ----------------------------
+
+FOLLOWUP_SYSTEM_PROMPT_V1 = """You are an expert interviewer deciding whether to \
+ask a spoken follow-up question after a candidate's answer.
+
+Ask a follow-up ONLY when it would genuinely help, for example:
+- The answer was vague or generic and a specific detail would clarify it.
+- The candidate mentioned something interesting that's worth digging into.
+- The answer missed a key point a strong answer should have covered.
+
+Do not ask a follow-up just to ask one — if the answer was already clear and \
+complete, set should_follow_up to false.
+
+Rules:
+- follow_up_question must directly reference something the candidate actually \
+said in their transcript (quote or closely paraphrase it) — never a generic, \
+interchangeable question that could follow any answer.
+- follow_up_question must be empty when should_follow_up is false.
+- reason is a single sentence explaining the decision.
+"""
+
+
+def build_followup_user_prompt(
+    question: str,
+    transcript: str,
+    key_points_missed: list[str] | None = None,
+    content_score: float | None = None,
+) -> str:
+    """Build the human-turn prompt for :data:`FOLLOWUP_SYSTEM_PROMPT_V1`.
+
+    Args:
+        question: The interview question that was asked.
+        transcript: The candidate's transcribed spoken answer.
+        key_points_missed: Points a strong answer should have covered, that
+            this answer missed (from :class:`src.feedback.Feedback`).
+        content_score: The LLM's content score (0-10) for this answer, if
+            already computed.
+
+    Returns:
+        The formatted prompt text to send as the human message.
+    """
+    sections = [
+        f"Interview question:\n{question}",
+        f"Candidate's spoken answer (transcribed):\n{transcript}",
+    ]
+
+    if content_score is not None:
+        sections.append(f"Content score already given for this answer: {content_score}/10")
+
+    if key_points_missed:
+        points = "\n".join(f"- {point}" for point in key_points_missed)
+        sections.append(f"Key points this answer missed:\n{points}")
+
+    return "\n\n".join(sections)
+
+
+# --- Interview agent: end-of-session practice plan (Task 8) -------------------
+
+PRACTICE_PLAN_SYSTEM_PROMPT_V1 = """You are an expert interview coach designing a \
+personalized 7-day practice plan for a candidate right after a mock interview.
+
+Rules:
+- Produce exactly 7 entries, days 1 through 7 in order.
+- Ground the plan in the candidate's actual weakest area and the specific tips \
+listed below — never generic, interchangeable advice unrelated to what was \
+observed in this session.
+- Build intensity across the week: early days target the single weakest area \
+directly, later days broaden to mixed practice and a full mock run-through.
+- focus is a short label for the day's theme; activity is one concrete, \
+actionable exercise the candidate can actually do that day.
+"""
+
+
+def build_practice_plan_user_prompt(
+    role: str,
+    strongest_area: str,
+    weakest_area: str,
+    tips: list[str],
+) -> str:
+    """Build the human-turn prompt for :data:`PRACTICE_PLAN_SYSTEM_PROMPT_V1`.
+
+    Args:
+        role: The target job role the interview was run for.
+        strongest_area: The candidate's strongest-scoring area this session.
+        weakest_area: The candidate's weakest-scoring area this session.
+        tips: The ``one_tip`` from every answer's feedback this session.
+
+    Returns:
+        The formatted prompt text to send as the human message.
+    """
+    sections = [
+        f"Target role: {role}",
+        f"Strongest area this session: {strongest_area}",
+        f"Weakest area this session: {weakest_area}",
+    ]
+
+    if tips:
+        tip_lines = "\n".join(f"- {tip}" for tip in tips)
+        sections.append(f"Tips given during this session:\n{tip_lines}")
+
+    return "\n\n".join(sections)
