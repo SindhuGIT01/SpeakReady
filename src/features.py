@@ -132,7 +132,7 @@ def _count_repetitions(tokens: list[str]) -> int:
         The number of positions where a token is identical to the one right
         before it (e.g. "the the cat" counts as one repetition).
     """
-    return sum(1 for prev, cur in zip(tokens, tokens[1:]) if prev == cur)
+    return sum(1 for prev, cur in zip(tokens, tokens[1:], strict=False) if prev == cur)
 
 
 def _pause_gaps(words: list[Word]) -> list[float]:
@@ -145,7 +145,9 @@ def _pause_gaps(words: list[Word]) -> list[float]:
         The gap in seconds before each word (excluding the first), clamped
         to zero for overlapping or out-of-order timestamps.
     """
-    return [max(0.0, cur.start - prev.end) for prev, cur in zip(words, words[1:])]
+    return [
+        max(0.0, cur.start - prev.end) for prev, cur in zip(words, words[1:], strict=False)
+    ]
 
 
 def _mean_sentence_length(text: str) -> float:

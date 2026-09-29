@@ -53,17 +53,27 @@ class LabelDecodingClassifier(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, inner: Any, label_encoder: LabelEncoder) -> None:
+        """Wrap an integer-label classifier with its label encoder.
+
+        Args:
+            inner: A fitted classifier that predicts integer-encoded labels.
+            label_encoder: The encoder used to produce those integer labels,
+                used here to translate them back to strings.
+        """
         self.inner = inner
         self.label_encoder = label_encoder
 
     @property
     def classes_(self) -> np.ndarray:
+        """The original string class labels, in the encoder's order."""
         return self.label_encoder.classes_
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """Predict string labels for ``X`` by decoding the inner model's output."""
         return self.label_encoder.inverse_transform(self.inner.predict(X))
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
+        """Predict class probabilities for ``X``, in ``classes_`` order."""
         return self.inner.predict_proba(X)
 
 
@@ -128,6 +138,6 @@ def predict_fluency(features: dict[str, float], model: Any = None) -> FluencyPre
     best_index = int(proba.argmax())
     label = classes[best_index]
     confidence = float(proba[best_index])
-    score = sum(p * _LABEL_SCORE_ANCHOR[c] for p, c in zip(proba, classes))
+    score = sum(p * _LABEL_SCORE_ANCHOR[c] for p, c in zip(proba, classes, strict=True))
 
     return FluencyPrediction(label=label, confidence=confidence, score=round(score, 1))

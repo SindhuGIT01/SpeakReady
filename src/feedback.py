@@ -146,7 +146,7 @@ def _invoke_with_retry(structured_model, messages: list) -> _FeedbackLLMOutput:
         FeedbackError: If every attempt fails to produce valid output.
     """
     last_error: Exception | None = None
-    for attempt in range(config.FEEDBACK_LLM_MAX_RETRIES + 1):
+    for _attempt in range(config.FEEDBACK_LLM_MAX_RETRIES + 1):
         try:
             result = structured_model.invoke(messages)
             return (

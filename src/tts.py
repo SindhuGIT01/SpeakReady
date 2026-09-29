@@ -24,7 +24,7 @@ def _cache_path(text: str, language: str):
     Returns:
         The path where this clip's cached mp3 bytes are (or would be) stored.
     """
-    key = hashlib.sha256(f"{language}:{text}".encode("utf-8")).hexdigest()
+    key = hashlib.sha256(f"{language}:{text}".encode()).hexdigest()
     return config.AUDIO_DIR / f"tts_{key}.mp3"
 
 

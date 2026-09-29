@@ -64,4 +64,4 @@ speakready/
 | 7 | LLM feedback engine | ⬜ |
 | 8 | Interview agent with follow-ups + voice (gTTS) | ⬜ |
 | 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
-| 10 | Tests, README, deployment | ⬜ |
+| 10 | Tests, README, deployment | ✅ Done |

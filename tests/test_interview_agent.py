@@ -19,9 +19,8 @@ from src.interview_agent import (
     InterviewSession,
     PracticeDay,
     QuestionItem,
-    _PracticePlanLLMOutput,
     _interleave,
-    _scores_by_area,
+    _PracticePlanLLMOutput,
     _strongest_and_weakest,
 )
 from src.resume import Project, ResumeProfile, ResumeQuestion, _ResumeQuestionSet
@@ -361,7 +360,7 @@ def test_follow_up_respects_max_limit(monkeypatch) -> None:
     session.MAX_FOLLOW_UPS_PER_QUESTION = 2
 
     follow_ups_asked = 0
-    while (question := session.next_question()) is not None:
+    while session.next_question() is not None:
         result = session.submit_text_answer("An answer that stays vague.")
         if result.follow_up_asked:
             follow_ups_asked += 1
