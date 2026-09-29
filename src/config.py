@@ -80,6 +80,15 @@ LOW_TYPE_TOKEN_RATIO: float = float(os.getenv("LOW_TYPE_TOKEN_RATIO", "0.4"))
 LONG_SENTENCE_WORD_COUNT: float = float(os.getenv("LONG_SENTENCE_WORD_COUNT", "30"))
 SHORT_SENTENCE_WORD_COUNT: float = float(os.getenv("SHORT_SENTENCE_WORD_COUNT", "5"))
 
+# --- Feedback engine -----------------------------------------------------------
+# Weights for combining the ML fluency score (0-100) and the LLM content score
+# (0-10, scaled to 0-100) into one overall score. Should sum to 1.0.
+CONTENT_SCORE_WEIGHT: float = float(os.getenv("CONTENT_SCORE_WEIGHT", "0.6"))
+FLUENCY_SCORE_WEIGHT: float = float(os.getenv("FLUENCY_SCORE_WEIGHT", "0.4"))
+# Extra attempts if the LLM's structured feedback output fails validation
+# (0 = try once, no retry).
+FEEDBACK_LLM_MAX_RETRIES: int = int(os.getenv("FEEDBACK_LLM_MAX_RETRIES", "1"))
+
 
 class ConfigError(RuntimeError):
     """Raised when a required setting is missing or invalid."""

@@ -14,7 +14,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 | 4 | Speech-to-text (Groq Whisper) | ✅ Done |
 | 5 | Speech feature extraction | ✅ Done |
 | 6 | ML fluency model | ✅ Done |
-| 7 | LLM feedback engine | ⬜ |
+| 7 | LLM feedback engine | ✅ Done |
 | 8 | Interview agent with follow-ups + voice (gTTS) | ⬜ |
 | 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
 | 10 | Tests, README, deployment | ⬜ |
@@ -104,3 +104,19 @@ fluency for SpeakReady's actual interview use case. Transcripts were also
 produced by `faster-whisper`'s local `small` model rather than the
 Groq-hosted `whisper-large-v3-turbo` used in production, so any features
 downstream of transcription errors carry that mismatch too.
+
+`src/feedback.py` is the LLM feedback engine: `generate_feedback(question,
+transcript, features, fluency_result, what_good_answer_covers, resume_context)`
+asks the LLM (via structured output) to judge only the *content* of an answer —
+a `content_score` (0-10) with a reason, `key_points_covered`/`key_points_missed`,
+real `grammar_corrections` (never invented), an `improved_answer` rewritten in
+the candidate's own words and honest to what they actually said or their
+resume, and `one_tip`. The `filler_summary` is deliberately *not* asked of the
+LLM — it's computed straight from `extract_features()`'s filler counts, so it
+can never drift from the numbers the app actually measured. `overall_score`
+combines the ML fluency score with the LLM content score using
+`CONTENT_SCORE_WEIGHT`/`FLUENCY_SCORE_WEIGHT` from `src/config.py` (default
+60/40). Prompts live in `src/prompts.py`, versioned (`_V1` suffix) so wording
+changes can be tracked without losing the previous version. If the LLM
+returns invalid structured output, `generate_feedback` retries
+(`FEEDBACK_LLM_MAX_RETRIES`) before raising `FeedbackError`.
