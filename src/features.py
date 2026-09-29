@@ -18,6 +18,23 @@ _PUNCT_STRIP_RE = re.compile(r"^[^a-zA-Z0-9']+|[^a-zA-Z0-9']+$")
 _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 _SENTENCE_WORD_RE = re.compile(r"[A-Za-z0-9']+")
 
+# The keys of the dict returned by extract_features(), in a fixed order.
+# Single source of truth for the fluency model's feature schema (Task 6):
+# both the training notebook and src/scorer.py import this instead of
+# hardcoding the column order, so they can never drift out of sync.
+FEATURE_NAMES: tuple[str, ...] = (
+    "words_per_minute",
+    "pause_count",
+    "long_pause_count",
+    "mean_pause_duration",
+    "total_pause_ratio",
+    "filler_count",
+    "filler_rate",
+    "repetition_count",
+    "type_token_ratio",
+    "mean_sentence_length",
+)
+
 # Words that make "like" a normal verb rather than a filler, e.g. "I like
 # pizza", "would you like", "do you like". This is a heuristic: it catches the
 # common subject-before-verb pattern but will miss or mis-flag edge cases.

@@ -13,7 +13,7 @@ An AI voice interview coach that interviews you by voice based on your resume an
 | 3 | Resume RAG + resume-based questions | ✅ Done |
 | 4 | Speech-to-text (Groq Whisper) | ✅ Done |
 | 5 | Speech feature extraction | ✅ Done |
-| 6 | ML fluency model | ⬜ |
+| 6 | ML fluency model | ✅ Done |
 | 7 | LLM feedback engine | ⬜ |
 | 8 | Interview agent with follow-ups + voice (gTTS) | ⬜ |
 | 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
@@ -55,3 +55,52 @@ ratio), and mean sentence length. The same function is used at training time
 for the fluency model (Task 6) and in the app, so features never drift out of
 sync. `explain_features(features)` turns the numbers into plain-language
 coaching tips.
+
+`notebooks/fluency_model.ipynb` trains the fluency classifier (Task 6) on
+[speechocean762](https://huggingface.co/datasets/mispeech/speechocean762), a
+public dataset of non-native English speakers with expert fluency scores.
+`src/scorer.py` loads the saved model and exposes `predict_fluency(features)`,
+which returns a `FluencyPrediction(label, confidence, score)` — a Beginner/
+Intermediate/Fluent label, the model's confidence in it, and a continuous
+0-100 score. See **Model results** below for how it was trained and how well
+it performs.
+
+## Model results
+
+Trained in `notebooks/fluency_model.ipynb` on
+[speechocean762](https://huggingface.co/datasets/mispeech/speechocean762)
+(2,500 train / 2,500 test utterances, its built-in split). The 0-10 expert
+fluency score was bucketed into 3 classes — Beginner (0-5), Intermediate
+(6-7), Fluent (8-10) — and four candidates were tuned with 5-fold
+stratified cross-validation on the train split, then evaluated once on the
+held-out test split. All numbers below are copied directly from
+`models/metrics.json`.
+
+| Model | Test accuracy | Test macro F1 | CV macro F1 (train) |
+|---|---|---|---|
+| Baseline (majority class) | 68.0% | 0.270 | — |
+| Logistic Regression | 70.0% | 0.598 | 0.638 |
+| **Random Forest (winner)** | **72.7%** | **0.633** | 0.649 |
+| XGBoost | 72.4% | 0.619 | 0.664 |
+
+**Winner: Random Forest** (`max_depth=10, min_samples_leaf=3,
+n_estimators=400`), selected by test macro F1. It comfortably beats the
+majority-class baseline — accuracy alone barely moves (68.0% → 72.7%)
+because ~66% of the dataset is already "Fluent," but macro F1 more than
+doubles (0.270 → 0.633), showing it's actually learning the minority
+Beginner/Intermediate classes rather than just guessing the majority one.
+Per-class performance (test set): Beginner F1 0.570, Intermediate F1 0.488,
+Fluent F1 0.841 — the model is most confident distinguishing clearly fluent
+speech and struggles most on the Beginner/Intermediate boundary, which is
+also where human raters tend to disagree most.
+
+**Limitations:** speechocean762 is *read-aloud* speech — non-native
+speakers reading a fixed sentence aloud — not spontaneous interview answers.
+Fluency signals in free speech (self-correction, thinking pauses, filler
+words while formulating an answer) differ from, and are often more varied
+than, fluency signals in reading a known sentence. Treat this model as a
+reasonable starting point, not a validated measure of spontaneous-speech
+fluency for SpeakReady's actual interview use case. Transcripts were also
+produced by `faster-whisper`'s local `small` model rather than the
+Groq-hosted `whisper-large-v3-turbo` used in production, so any features
+downstream of transcription errors carry that mismatch too.

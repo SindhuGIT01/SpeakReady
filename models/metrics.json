@@ -1,0 +1,124 @@
+{
+  "dataset": "mispeech/speechocean762",
+  "n_train": 2500,
+  "n_test": 2500,
+  "class_thresholds": {
+    "Beginner": "0-5",
+    "Intermediate": "6-7",
+    "Fluent": "8-10"
+  },
+  "class_distribution_train": {
+    "Fluent": 1646,
+    "Intermediate": 584,
+    "Beginner": 270
+  },
+  "class_distribution_test": {
+    "Fluent": 1701,
+    "Intermediate": 619,
+    "Beginner": 180
+  },
+  "best_model": "Random Forest",
+  "models": {
+    "Baseline (majority class)": {
+      "accuracy": 0.6804,
+      "macro_f1": 0.2699357295881933
+    },
+    "Logistic Regression": {
+      "accuracy": 0.7,
+      "macro_f1": 0.5975781029070818,
+      "cv_macro_f1": 0.6380480217597475,
+      "best_params": {
+        "clf__C": 0.01
+      }
+    },
+    "Random Forest": {
+      "accuracy": 0.7272,
+      "macro_f1": 0.632854952563867,
+      "cv_macro_f1": 0.6488326448291774,
+      "best_params": {
+        "max_depth": 10,
+        "min_samples_leaf": 3,
+        "n_estimators": 400
+      }
+    },
+    "XGBoost": {
+      "accuracy": 0.7236,
+      "macro_f1": 0.6188608365954147,
+      "cv_macro_f1": 0.6637586561948942,
+      "best_params": {
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "n_estimators": 150
+      }
+    }
+  },
+  "best_model_classification_report": {
+    "Beginner": {
+      "precision": 0.5110132158590308,
+      "recall": 0.6444444444444445,
+      "f1-score": 0.5700245700245701,
+      "support": 180.0
+    },
+    "Fluent": {
+      "precision": 0.867877269881027,
+      "recall": 0.8148148148148148,
+      "f1-score": 0.8405093996361431,
+      "support": 1701.0
+    },
+    "Intermediate": {
+      "precision": 0.46745562130177515,
+      "recall": 0.5105008077544426,
+      "f1-score": 0.488030888030888,
+      "support": 619.0
+    },
+    "accuracy": 0.7272,
+    "macro avg": {
+      "precision": 0.6154487023472776,
+      "recall": 0.6565866890045673,
+      "f1-score": 0.632854952563867,
+      "support": 2500.0
+    },
+    "weighted avg": {
+      "precision": 0.7430386578032205,
+      "recall": 0.7272,
+      "f1-score": 0.7337608124306487,
+      "support": 2500.0
+    }
+  },
+  "best_model_confusion_matrix": {
+    "labels": [
+      "Beginner",
+      "Intermediate",
+      "Fluent"
+    ],
+    "matrix": [
+      [
+        116,
+        59,
+        5
+      ],
+      [
+        97,
+        316,
+        206
+      ],
+      [
+        14,
+        301,
+        1386
+      ]
+    ]
+  },
+  "feature_names": [
+    "words_per_minute",
+    "pause_count",
+    "long_pause_count",
+    "mean_pause_duration",
+    "total_pause_ratio",
+    "filler_count",
+    "filler_rate",
+    "repetition_count",
+    "type_token_ratio",
+    "mean_sentence_length"
+  ]
+}

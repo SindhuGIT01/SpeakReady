@@ -30,6 +30,9 @@ audio/
 data/resumes/*
 !data/resumes/.gitkeep
 
+# Cached local Whisper transcripts for model training (regenerable)
+data/whisper_cache/
+
 # Notebooks / editors / OS
 .ipynb_checkpoints/
 .vscode/
