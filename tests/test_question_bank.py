@@ -6,11 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from langchain_chroma import Chroma
+from pydantic import ValidationError
 
 from src.question_bank import (
     HR_CATEGORIES,
     TECHNICAL_CATEGORIES,
     GeneratedQuestion,
+    QuestionGenerationError,
     _GeneratedQuestionSet,
     _get_embeddings,
     generate_custom_role_questions,
@@ -202,3 +204,39 @@ def test_generate_custom_role_questions_falls_back_on_invalid_difficulty() -> No
     )
 
     assert questions[0]["difficulty"] == "hard"
+
+
+def test_generate_custom_role_questions_retries_on_malformed_output() -> None:
+    """A single bad/unparseable LLM response should be retried, not raised."""
+    mock_question_set = _GeneratedQuestionSet(
+        questions=[
+            GeneratedQuestion(
+                question="Describe your CI/CD pipeline experience.",
+                category="DevOps",
+                difficulty="medium",
+                what_good_answer_covers=["Concrete pipeline example"],
+            )
+        ]
+    )
+    mock_structured = MagicMock()
+    mock_structured.invoke.side_effect = [ValueError("malformed JSON"), mock_question_set]
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = mock_structured
+
+    questions = generate_custom_role_questions("DevOps Engineer", n=1, llm=mock_llm)
+
+    assert mock_structured.invoke.call_count == 2
+    assert len(questions) == 1
+
+
+def test_generate_custom_role_questions_raises_after_exhausting_retries() -> None:
+    """Persistent invalid output should raise a clear error, not an unhandled one."""
+    mock_structured = MagicMock()
+    mock_structured.invoke.side_effect = ValidationError.from_exception_data(
+        "_GeneratedQuestionSet", []
+    )
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = mock_structured
+
+    with pytest.raises(QuestionGenerationError):
+        generate_custom_role_questions("DevOps Engineer", n=1, llm=mock_llm)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import uuid
 
 import streamlit as st
@@ -10,6 +11,8 @@ from app_common import DIFFICULTY_OPTIONS, ROLE_OPTIONS, get_db_connection, get_
 from src import config
 from src.interview_agent import InterviewSession
 from src.resume import ResumeParseError, extract_profile, load_resume
+
+logger = logging.getLogger(__name__)
 
 st.title("⚙️ Interview Setup")
 st.caption("Tell us who you're interviewing for, and optionally add your resume.")
@@ -121,9 +124,11 @@ if st.button("Begin Interview", type="primary"):
             st.session_state["session_difficulty"] = difficulty
             st.switch_page("app_pages/interview.py")
         except config.ConfigError:
+            logger.exception("Config error while starting an interview session")
             st.error(
                 "The AI service isn't configured yet. Please check the app's API "
                 "key setup and try again."
             )
         except Exception:
+            logger.exception("Failed to start an interview session")
             st.error("Something went wrong while preparing your interview. Please try again.")

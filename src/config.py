@@ -88,6 +88,9 @@ FLUENCY_SCORE_WEIGHT: float = float(os.getenv("FLUENCY_SCORE_WEIGHT", "0.4"))
 # Extra attempts if the LLM's structured feedback output fails validation
 # (0 = try once, no retry).
 FEEDBACK_LLM_MAX_RETRIES: int = int(os.getenv("FEEDBACK_LLM_MAX_RETRIES", "1"))
+# Extra attempts if the LLM's structured output fails validation when
+# generating questions for a custom (off-bank) role (0 = try once, no retry).
+CUSTOM_ROLE_LLM_MAX_RETRIES: int = int(os.getenv("CUSTOM_ROLE_LLM_MAX_RETRIES", "2"))
 
 # --- Body language (webcam coaching) -------------------------------------------
 # MediaPipe Tasks model bundles, downloaded once (if missing) and cached under

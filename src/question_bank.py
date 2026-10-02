@@ -15,12 +15,17 @@ from typing import Any
 from uuid import uuid4
 
 from langchain_chroma import Chroma
+from langchain_core.exceptions import OutputParserException
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_huggingface import HuggingFaceEmbeddings
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from src import config
+
+
+class QuestionGenerationError(RuntimeError):
+    """Raised when the LLM can't produce valid custom-role questions."""
 
 QUESTION_BANK_PATH = config.QUESTIONS_DIR / "question_bank.json"
 
@@ -257,6 +262,44 @@ Rules:
   in what_good_answer_covers."""
 
 
+def _invoke_with_retry(structured_model, messages: list) -> _GeneratedQuestionSet:
+    """Call the structured-output LLM, retrying on invalid/unparseable JSON.
+
+    LLMs occasionally return structured output that doesn't conform to the
+    requested schema (malformed JSON, a missing field); this retries a
+    couple of times before giving up, the same defense
+    :func:`src.feedback.generate_feedback` uses for its own structured call.
+
+    Args:
+        structured_model: A chat model wrapped with
+            ``with_structured_output(_GeneratedQuestionSet)``.
+        messages: The messages to send.
+
+    Returns:
+        The parsed :class:`_GeneratedQuestionSet`.
+
+    Raises:
+        QuestionGenerationError: If every attempt fails to produce valid
+            output.
+    """
+    last_error: Exception | None = None
+    for _attempt in range(config.CUSTOM_ROLE_LLM_MAX_RETRIES + 1):
+        try:
+            result = structured_model.invoke(messages)
+            return (
+                result
+                if isinstance(result, _GeneratedQuestionSet)
+                else _GeneratedQuestionSet.model_validate(result)
+            )
+        except (ValidationError, OutputParserException, ValueError) as exc:
+            last_error = exc
+
+    raise QuestionGenerationError(
+        "LLM failed to produce valid custom-role questions after "
+        f"{config.CUSTOM_ROLE_LLM_MAX_RETRIES + 1} attempt(s)."
+    ) from last_error
+
+
 def generate_custom_role_questions(
     role: str,
     difficulty: str | None = None,
@@ -285,6 +328,8 @@ def generate_custom_role_questions(
 
     Raises:
         config.ConfigError: If no ``llm`` is given and GROQ_API_KEY is missing.
+        QuestionGenerationError: If the LLM never produces valid structured
+            output after retrying (see ``config.CUSTOM_ROLE_LLM_MAX_RETRIES``).
     """
     from src.llm import get_llm
 
@@ -300,17 +345,11 @@ def generate_custom_role_questions(
         f"Role: {role}\n{difficulty_instruction}\n\n"
         f"Generate exactly {n} interview questions for this role."
     )
-    result = structured_model.invoke(
-        [
-            SystemMessage(content=_CUSTOM_ROLE_SYSTEM_PROMPT),
-            HumanMessage(content=prompt),
-        ]
-    )
-    question_set = (
-        result
-        if isinstance(result, _GeneratedQuestionSet)
-        else _GeneratedQuestionSet.model_validate(result)
-    )
+    messages = [
+        SystemMessage(content=_CUSTOM_ROLE_SYSTEM_PROMPT),
+        HumanMessage(content=prompt),
+    ]
+    question_set = _invoke_with_retry(structured_model, messages)
 
     valid_difficulties = {"easy", "medium", "hard"}
     return [
