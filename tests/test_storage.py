@@ -15,6 +15,7 @@ from src.storage import (
     end_session,
     get_connection,
     get_session,
+    init_db,
     list_answers,
     list_sessions,
     save_answer,
@@ -33,6 +34,52 @@ def test_get_connection_creates_tables(conn: sqlite3.Connection) -> None:
         row["name"] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }
     assert {"sessions", "answers"} <= tables
+
+
+def test_init_db_migrates_an_answers_table_missing_newer_columns() -> None:
+    """An existing DB predating body_language/voice_confidence/pronunciation
+    columns should get them added, not raise on the next save_answer()."""
+    import json
+
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute(
+        """CREATE TABLE answers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            question TEXT NOT NULL,
+            is_followup INTEGER NOT NULL,
+            area TEXT,
+            transcript TEXT NOT NULL,
+            scores_json TEXT NOT NULL,
+            features_json TEXT NOT NULL,
+            feedback_json TEXT NOT NULL,
+            answered_at TEXT NOT NULL
+        )"""
+    )
+    conn.commit()
+
+    init_db(conn)
+
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(answers)")}
+    assert {"body_language_json", "voice_confidence_json", "pronunciation_json"} <= columns
+
+    create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")
+    save_answer(
+        conn,
+        "sess-1",
+        "Tell me about yourself.",
+        False,
+        "HR",
+        "I am a software engineer.",
+        {"overall_score": 80.0},
+        {"words_per_minute": 140.0},
+        {"content_score": 8},
+        "2026-01-01T00:01:00",
+        voice_confidence={"confidence_score": 80.0},
+    )
+    row = list_answers(conn, "sess-1")[0]
+    assert json.loads(row["voice_confidence_json"]) == {"confidence_score": 80.0}
 
 
 def test_create_session_and_get_session(conn: sqlite3.Connection) -> None:

@@ -44,14 +44,43 @@ CREATE TABLE IF NOT EXISTS answers (
 """
 
 
+# Nullable `answers` columns added after the table's initial release.
+# CREATE TABLE IF NOT EXISTS only applies to a brand-new database; an
+# existing one (e.g. a developer's or user's local speakready.db from
+# before a given feature) needs these added explicitly, or inserts into
+# that column fail with "no column named ...".
+_ANSWERS_ADDED_COLUMNS: tuple[str, ...] = (
+    "body_language_json",
+    "voice_confidence_json",
+    "pronunciation_json",
+)
+
+
+def _ensure_answers_columns(conn: sqlite3.Connection) -> None:
+    """Add any `answers` columns from :data:`_ANSWERS_ADDED_COLUMNS` that are missing.
+
+    Args:
+        conn: An open SQLite connection, with the `answers` table already
+            created.
+    """
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(answers)")}
+    for column in _ANSWERS_ADDED_COLUMNS:
+        if column not in existing:
+            conn.execute(f"ALTER TABLE answers ADD COLUMN {column} TEXT")
+
+
 def init_db(conn: sqlite3.Connection) -> None:
     """Create the sessions and answers tables if they don't already exist.
+
+    Also migrates an existing `answers` table forward with any columns
+    added since it was first created (see :data:`_ANSWERS_ADDED_COLUMNS`).
 
     Args:
         conn: An open SQLite connection.
     """
     conn.execute(_SESSIONS_SCHEMA)
     conn.execute(_ANSWERS_SCHEMA)
+    _ensure_answers_columns(conn)
     conn.commit()
 
 
