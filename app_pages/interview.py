@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import cv2
+import numpy as np
 import streamlit as st
 
 from src import config
@@ -38,6 +40,8 @@ if stage == "asking" and st.session_state.get("current_question") is None:
             st.error("Couldn't finish the session — please try answering one more question.")
     else:
         st.session_state["current_question"] = next_question
+        st.session_state["body_language_frames"] = []
+        st.session_state["_last_webcam_snapshot_bytes"] = None
     st.rerun()
 
 stage = st.session_state.get("interview_stage", "idle")
@@ -65,10 +69,50 @@ if stage == "asking":
     st.write("")
     audio_value = st.audio_input("Record your answer")
 
+    st.divider()
+    webcam_enabled = st.toggle(
+        "📷 Track eye contact & posture (optional)",
+        value=st.session_state.get("webcam_enabled", False),
+        help=(
+            "Interviews aren't just about what you say — this practices your "
+            "presence too. Take a snapshot or two of yourself while you answer "
+            "out loud and we'll add heuristic eye-contact and posture feedback "
+            "alongside your fluency and content scores. Nothing is required: "
+            "the interview works exactly the same without it, and without "
+            "webcam/camera permission."
+        ),
+    )
+    st.session_state["webcam_enabled"] = webcam_enabled
+
+    if webcam_enabled:
+        snapshot = st.camera_input(
+            "Take a snapshot or two while you answer",
+            key=f"webcam_snapshot_{question.question_id}",
+        )
+        if snapshot is not None:
+            snapshot_bytes = snapshot.getvalue()
+            if snapshot_bytes != st.session_state.get("_last_webcam_snapshot_bytes"):
+                st.session_state["_last_webcam_snapshot_bytes"] = snapshot_bytes
+                frame = cv2.imdecode(np.frombuffer(snapshot_bytes, np.uint8), cv2.IMREAD_COLOR)
+                if frame is not None:
+                    st.session_state["body_language_frames"].append(frame)
+
+        frame_count = len(st.session_state.get("body_language_frames", []))
+        if frame_count:
+            count_col, clear_col = st.columns([3, 1])
+            count_col.caption(f"📸 {frame_count} snapshot(s) captured for this answer.")
+            if clear_col.button("Clear"):
+                st.session_state["body_language_frames"] = []
+                st.session_state["_last_webcam_snapshot_bytes"] = None
+                st.rerun()
+
     if audio_value is not None and st.button("Submit Answer", type="primary"):
         try:
+            body_language_frames = st.session_state.get("body_language_frames") or None
             with st.spinner("Analyzing your answer..."):
-                result = session.submit_answer(audio_value.getvalue())
+                result = session.submit_answer(
+                    audio_value.getvalue(), body_language_frames=body_language_frames
+                )
             st.session_state["last_answer_result"] = result
             st.session_state["interview_stage"] = "reviewing"
             st.rerun()
@@ -119,6 +163,16 @@ elif stage == "reviewing":
 
     with st.expander("Improved answer"):
         st.write(fb.improved_answer)
+
+    if result.body_language_result is not None:
+        bl = result.body_language_result
+        with st.container(border=True):
+            st.markdown("**📷 Body language (heuristic)**")
+            bl_col1, bl_col2, bl_col3 = st.columns(3)
+            bl_col1.metric("Eye contact", f"{bl.eye_contact_ratio * 100:.0f}%")
+            bl_col2.metric("Posture", f"{bl.posture_score:.0f}/100")
+            bl_col3.metric("Looked away", f"{bl.looking_away_count}x")
+            st.caption(bl.summary)
 
     st.markdown(f"💡 **Tip:** {fb.one_tip}")
 

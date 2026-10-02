@@ -12,6 +12,7 @@ gives LLM-based feedback, asks follow-up questions, and tracks progress over tim
 - **ML:** scikit-learn / XGBoost fluency score model (features via librosa)
 - **Text-to-speech:** gTTS
 - **Storage:** SQLite for session history
+- **Body language:** MediaPipe Face Landmarker + Pose Landmarker (eye contact, posture heuristics)
 - **Tests:** pytest
 
 ## Folder structure
@@ -65,3 +66,4 @@ speakready/
 | 8 | Interview agent with follow-ups + voice (gTTS) | ⬜ |
 | 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
 | 10 | Tests, README, deployment | ✅ Done |
+| 11 | Webcam body language coach (eye contact, posture) | ✅ Done |

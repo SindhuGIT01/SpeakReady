@@ -64,3 +64,21 @@ def test_build_report_pdf_handles_no_difficulty_and_no_answers() -> None:
     pdf_bytes = build_report_pdf("Backend Engineer", None, _sample_summary(), [])
 
     assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_build_report_pdf_includes_body_language_when_present() -> None:
+    """Answers carrying a body_language_json payload should not break PDF rendering."""
+    answers = _sample_answers()
+    answers[0]["body_language_json"] = json.dumps(
+        {
+            "eye_contact_ratio": 0.8,
+            "posture_score": 75.0,
+            "looking_away_count": 1,
+            "summary": "Good eye contact.",
+        }
+    )
+    answers[1]["body_language_json"] = None
+
+    pdf_bytes = build_report_pdf("Backend Engineer", "medium", _sample_summary(), answers)
+
+    assert pdf_bytes.startswith(b"%PDF")

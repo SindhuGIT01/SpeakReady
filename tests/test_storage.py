@@ -87,6 +87,57 @@ def test_save_answer_returns_incrementing_row_ids(conn: sqlite3.Connection) -> N
     assert second_id == first_id + 1
 
 
+def test_save_answer_body_language_defaults_to_null(conn: sqlite3.Connection) -> None:
+    """Answers saved without a body_language result should store NULL, not a crash."""
+    create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")
+
+    save_answer(
+        conn,
+        "sess-1",
+        "Tell me about yourself.",
+        False,
+        "HR",
+        "I am a software engineer.",
+        {"overall_score": 80.0},
+        {"words_per_minute": 140.0},
+        {"content_score": 8},
+        "2026-01-01T00:01:00",
+    )
+
+    row = list_answers(conn, "sess-1")[0]
+    assert row["body_language_json"] is None
+
+
+def test_save_answer_persists_body_language_result(conn: sqlite3.Connection) -> None:
+    """A given body_language dict should round-trip through storage as JSON."""
+    import json
+
+    create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")
+    body_language = {
+        "eye_contact_ratio": 0.8,
+        "posture_score": 72.5,
+        "looking_away_count": 1,
+        "summary": "Good eye contact 80% of the time.",
+    }
+
+    save_answer(
+        conn,
+        "sess-1",
+        "Tell me about yourself.",
+        False,
+        "HR",
+        "I am a software engineer.",
+        {"overall_score": 80.0},
+        {"words_per_minute": 140.0},
+        {"content_score": 8},
+        "2026-01-01T00:01:00",
+        body_language=body_language,
+    )
+
+    row = list_answers(conn, "sess-1")[0]
+    assert json.loads(row["body_language_json"]) == body_language
+
+
 def test_list_answers_returns_rows_in_submission_order(conn: sqlite3.Connection) -> None:
     """Answers should come back ordered by insertion (question order)."""
     create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")

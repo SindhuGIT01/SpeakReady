@@ -103,6 +103,30 @@ def build_report_pdf(
     _add_wrapped(pdf, f"Focus area: {summary.weakest_area}")
     pdf.ln(4)
 
+    body_language_rows = [
+        json.loads(row["body_language_json"]) for row in answers if row.get("body_language_json")
+    ]
+    if body_language_rows:
+        _add_wrapped(pdf, "Body Language (heuristic)", size=14, style="B")
+        avg_eye_contact = sum(r["eye_contact_ratio"] for r in body_language_rows) / len(
+            body_language_rows
+        )
+        avg_posture = sum(r["posture_score"] for r in body_language_rows) / len(
+            body_language_rows
+        )
+        total_looking_away = sum(r["looking_away_count"] for r in body_language_rows)
+        _add_wrapped(
+            pdf,
+            f"Based on {len(body_language_rows)} of {len(answers)} answer(s) with the "
+            "optional webcam toggle on.",
+        )
+        _add_wrapped(
+            pdf,
+            f"Avg. eye contact: {avg_eye_contact * 100:.0f}%  -  "
+            f"Avg. posture: {avg_posture:.0f}/100  -  Looked away: {total_looking_away}x",
+        )
+        pdf.ln(4)
+
     _add_wrapped(pdf, "7-Day Practice Plan", size=14, style="B")
     for day in summary.practice_plan:
         _add_wrapped(pdf, f"Day {day.day} - {day.focus}", style="B")

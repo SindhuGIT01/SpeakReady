@@ -313,6 +313,71 @@ def test_submit_answer_uses_transcribe(monkeypatch) -> None:
     assert result.transcript.text == "A transcribed spoken answer."
 
 
+# --- body language (Task 11) --------------------------------------------------
+
+
+def test_submit_text_answer_without_frames_has_no_body_language_result(monkeypatch) -> None:
+    """Not passing body_language_frames (the default) should leave it None."""
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_text_answer("An answer.")
+
+    assert result.body_language_result is None
+
+
+def test_submit_text_answer_with_frames_attaches_body_language_result(monkeypatch) -> None:
+    """Frames should be run through body_language.analyze_video and attached."""
+    from src.body_language import BodyLanguageResult
+
+    expected = BodyLanguageResult(
+        eye_contact_ratio=0.9, posture_score=85.0, looking_away_count=0, summary="Great job."
+    )
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.body_language_mod.analyze_video", lambda frames: expected
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_text_answer("An answer.", body_language_frames=["frame"])
+
+    assert result.body_language_result == expected
+    assert session._answers[0].body_language_result == expected
+
+
+def test_body_language_failure_does_not_break_the_interview(monkeypatch) -> None:
+    """A webcam-analysis failure must never take down the rest of the interview."""
+    from src.body_language import BodyLanguageError
+
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+
+    def _boom(frames):
+        raise BodyLanguageError("no model available")
+
+    monkeypatch.setattr("src.interview_agent.body_language_mod.analyze_video", _boom)
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_text_answer("An answer.", body_language_frames=["frame"])
+
+    assert result.body_language_result is None
+    assert result.feedback.overall_score == 75.0
+
+
 # --- follow-up logic ---------------------------------------------------------
 
 

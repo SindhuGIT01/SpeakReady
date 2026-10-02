@@ -14,11 +14,13 @@ from __future__ import annotations
 import argparse
 import sqlite3
 from collections import deque
-from dataclasses import dataclass
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from itertools import zip_longest
 from pathlib import Path
 from statistics import mean
+from typing import Any
 from uuid import uuid4
 
 from langchain_core.exceptions import OutputParserException
@@ -26,10 +28,12 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field, ValidationError
 
+from src import body_language as body_language_mod
 from src import features as features_mod
 from src import feedback as feedback_mod
 from src import prompts, question_bank, scorer, speech, storage, tts
 from src import resume as resume_mod
+from src.body_language import BodyLanguageResult
 from src.feedback import Feedback
 from src.resume import ResumeProfile
 from src.scorer import FluencyPrediction
@@ -140,6 +144,7 @@ class AnswerRecord:
     fluency_result: FluencyPrediction
     feedback: Feedback
     answered_at: datetime
+    body_language_result: BodyLanguageResult | None = None
 
 
 @dataclass(frozen=True)
@@ -151,6 +156,7 @@ class AnswerResult:
     fluency_result: FluencyPrediction
     feedback: Feedback
     follow_up_asked: bool
+    body_language_result: BodyLanguageResult | None = None
 
 
 def _interleave(a: list[QuestionItem], b: list[QuestionItem]) -> list[QuestionItem]:
@@ -228,6 +234,29 @@ def _resume_context(profile: ResumeProfile) -> str:
     if profile.certifications:
         lines.append("Certifications: " + ", ".join(profile.certifications))
     return "\n".join(lines)
+
+
+def _analyze_body_language(frames: Sequence[Any] | None) -> BodyLanguageResult | None:
+    """Best-effort webcam body language analysis for one answer.
+
+    This feature is optional and off by default (Task 11): no frames means
+    the candidate didn't opt in, and any analysis failure (bad frame data, a
+    missing model download, etc.) must never take down the interview itself.
+
+    Args:
+        frames: Webcam frames captured during the answer, or ``None``/empty
+            if the webcam toggle wasn't used.
+
+    Returns:
+        The :class:`~src.body_language.BodyLanguageResult`, or ``None`` if no
+        frames were given or analysis failed.
+    """
+    if not frames:
+        return None
+    try:
+        return body_language_mod.analyze_video(frames)
+    except (body_language_mod.BodyLanguageError, ValueError, OSError):
+        return None
 
 
 class InterviewSession:
@@ -410,12 +439,21 @@ class InterviewSession:
 
     # --- submit_answer / submit_text_answer ----------------------------------
 
-    def submit_answer(self, audio: bytes | str | Path) -> AnswerResult:
+    def submit_answer(
+        self,
+        audio: bytes | str | Path,
+        body_language_frames: Sequence[Any] | None = None,
+    ) -> AnswerResult:
         """Transcribe a spoken answer, score it, and generate feedback.
 
         Args:
             audio: Raw audio bytes or a path to an audio file, as accepted
                 by :func:`src.speech.transcribe`.
+            body_language_frames: Optional webcam frames captured during the
+                answer (Task 11). When given, they're run through
+                :func:`src.body_language.analyze_video`; omit this (or pass
+                ``None``) when the webcam toggle is off — the interview works
+                the same either way.
 
         Returns:
             The :class:`AnswerResult` for this answer.
@@ -424,9 +462,13 @@ class InterviewSession:
             InterviewError: If no question is currently pending.
         """
         transcript = speech.transcribe(audio)
-        return self._process_transcript(transcript)
+        return self._process_transcript(transcript, body_language_frames)
 
-    def submit_text_answer(self, text: str) -> AnswerResult:
+    def submit_text_answer(
+        self,
+        text: str,
+        body_language_frames: Sequence[Any] | None = None,
+    ) -> AnswerResult:
         """Score a typed answer, skipping real transcription.
 
         Used by the text-only CLI demo and by tests, where no audio is
@@ -436,6 +478,8 @@ class InterviewSession:
 
         Args:
             text: The candidate's typed answer.
+            body_language_frames: Optional webcam frames captured during the
+                answer (Task 11); see :meth:`submit_answer`.
 
         Returns:
             The :class:`AnswerResult` for this answer.
@@ -449,14 +493,20 @@ class InterviewSession:
 
         duration = max(len(text.split()) / _DEMO_ASSUMED_WPM * 60, 1.0)
         transcript = Transcript(text=text, words=[], duration_seconds=duration, language="en")
-        return self._process_transcript(transcript)
+        return self._process_transcript(transcript, body_language_frames)
 
-    def _process_transcript(self, transcript: Transcript) -> AnswerResult:
+    def _process_transcript(
+        self,
+        transcript: Transcript,
+        body_language_frames: Sequence[Any] | None = None,
+    ) -> AnswerResult:
         """Shared scoring/feedback/follow-up pipeline for one transcript.
 
         Args:
             transcript: The transcribed (or synthesized, for typed answers)
                 answer to the current question.
+            body_language_frames: Optional webcam frames captured during the
+                answer (Task 11); see :meth:`submit_answer`.
 
         Returns:
             The :class:`AnswerResult` for this answer.
@@ -480,6 +530,7 @@ class InterviewSession:
             resume_context=resume_context,
             llm=self._get_llm(),
         )
+        body_language_result = _analyze_body_language(body_language_frames)
 
         answered_at = datetime.now(timezone.utc)
         self._answers.append(
@@ -490,6 +541,7 @@ class InterviewSession:
                 fluency_result=fluency_result,
                 feedback=fb,
                 answered_at=answered_at,
+                body_language_result=body_language_result,
             )
         )
 
@@ -509,6 +561,7 @@ class InterviewSession:
                 features=feats,
                 feedback=fb.model_dump(),
                 answered_at=answered_at.isoformat(),
+                body_language=asdict(body_language_result) if body_language_result else None,
             )
 
         follow_up_asked = self._maybe_queue_follow_up(item, transcript.text, fb)
@@ -520,6 +573,7 @@ class InterviewSession:
             fluency_result=fluency_result,
             feedback=fb,
             follow_up_asked=follow_up_asked,
+            body_language_result=body_language_result,
         )
 
     def _maybe_queue_follow_up(

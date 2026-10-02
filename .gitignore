@@ -14,6 +14,9 @@ chroma_db/
 *.db
 *.sqlite3
 
+# MediaPipe model bundles (downloaded on first use, not trained in this repo)
+models/*.task
+
 # Audio files
 audio/
 *.wav

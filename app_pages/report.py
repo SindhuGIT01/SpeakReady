@@ -50,6 +50,27 @@ if answers:
     st.bar_chart(chart_data, x="Question", y="Overall score")
     st.divider()
 
+body_language_rows = [
+    json.loads(a["body_language_json"]) for a in answers if a["body_language_json"]
+]
+if body_language_rows:
+    st.subheader("📷 Body language (heuristic)")
+    st.caption(
+        f"Based on {len(body_language_rows)} of {len(answers)} answer(s) where the "
+        "optional webcam toggle was used."
+    )
+    avg_eye_contact = sum(r["eye_contact_ratio"] for r in body_language_rows) / len(
+        body_language_rows
+    )
+    avg_posture = sum(r["posture_score"] for r in body_language_rows) / len(body_language_rows)
+    total_looking_away = sum(r["looking_away_count"] for r in body_language_rows)
+
+    bl1, bl2, bl3 = st.columns(3)
+    bl1.metric("Avg. eye contact", f"{avg_eye_contact * 100:.0f}%")
+    bl2.metric("Avg. posture", f"{avg_posture:.0f}/100")
+    bl3.metric("Times looked away", total_looking_away)
+    st.divider()
+
 st.subheader("7-day practice plan")
 for day in summary.practice_plan:
     with st.container(border=True):

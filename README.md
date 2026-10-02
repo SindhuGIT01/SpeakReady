@@ -57,6 +57,11 @@ real ML model I trained myself, not just an LLM prompt.
   charts score, filler rate, and pace trends over time.
 - 📥 **Downloadable PDF report** — a shareable summary with your scores and a
   personalized 7-day practice plan.
+- 📷 **Webcam body language coaching (optional)** — an opt-in toggle takes a
+  snapshot or two of you while you answer and scores eye contact and posture
+  with MediaPipe's face/pose landmarks, because interviews are about presence,
+  not just words. No webcam, no permission, no toggle — the interview works
+  exactly the same either way.
 
 ## Architecture
 
@@ -71,6 +76,7 @@ flowchart TD
 
     Agent -- "TTS (gTTS)" --> Candidate((Candidate))
     Candidate -- "spoken answer" --> Whisper["Speech-to-Text\n(Groq Whisper API)"]
+    Candidate -. "optional webcam snapshots" .-> BodyLang["Body Language Heuristics\n(MediaPipe Face + Pose)"]
 
     Whisper --> Features["Feature Extraction\n(WPM, pauses, fillers, TTR...)"]
     Features --> Fluency["ML Fluency Model\n(Random Forest)"]
@@ -78,6 +84,7 @@ flowchart TD
 
     Fluency --> Score["Combined Score"]
     Feedback --> Score
+    BodyLang -. "eye contact + posture" .-> Score
     Score --> Agent
 
     Agent -- "follow-up decision" --> Agent
@@ -101,8 +108,9 @@ Whisper-dependent paths are mocked in tests and skipped live without a key.
 | Text-to-speech | [gTTS](https://github.com/pndurang/gTTS) with disk caching |
 | RAG | LangChain + [Chroma](https://www.trychroma.com/) + HuggingFace `sentence-transformers/all-MiniLM-L6-v2` |
 | ML | scikit-learn (Random Forest) / XGBoost, features via [librosa](https://librosa.org/) |
+| Body language | [MediaPipe](https://ai.google.dev/edge/mediapipe) Face Landmarker + Pose Landmarker, via OpenCV |
 | Storage | SQLite (session history), PDF export via `fpdf2` |
-| Testing | pytest, 89 tests, mocked external APIs + auto-skipped live tests |
+| Testing | pytest, 113 tests, mocked external APIs + auto-skipped live tests |
 | CI | GitHub Actions — pytest + [ruff](https://docs.astral.sh/ruff/) on every push |
 
 All of it runs on free tiers — no paid API keys required.
@@ -172,6 +180,7 @@ speakready/
 │   ├── scorer.py              # Loads the trained model, predicts fluency
 │   ├── feedback.py            # LLM content-feedback engine
 │   ├── prompts.py             # Versioned LLM prompts
+│   ├── body_language.py       # Webcam eye contact / posture heuristics (MediaPipe)
 │   ├── interview_agent.py     # Stateful InterviewSession: plan, follow-ups, summary
 │   ├── storage.py             # SQLite persistence for sessions/answers
 │   └── report.py              # PDF report generation
@@ -180,7 +189,7 @@ speakready/
 │   └── resumes/                # User uploads (git-ignored)
 ├── models/                    # Trained fluency model + metrics.json
 ├── notebooks/                 # Model training notebook (Task 6)
-├── tests/                     # pytest suite (89 tests)
+├── tests/                     # pytest suite (113 tests)
 ├── .github/workflows/ci.yml   # CI: pytest + ruff on every push
 └── requirements.txt
 ```
@@ -191,12 +200,15 @@ speakready/
 python -m pytest -v
 ```
 
-89 tests cover feature extraction, the fluency scorer, the LLM feedback
+113 tests cover feature extraction, the fluency scorer, the LLM feedback
 engine, the interview agent's question planning and follow-up logic, resume
-parsing/RAG, speech transcription, TTS caching, PDF reports, and SQLite
-storage. External APIs (Groq LLM, Groq Whisper) are mocked everywhere except
-a handful of live smoke tests, which skip automatically when `GROQ_API_KEY`
-isn't set — so the full suite (and CI) runs green with zero API keys.
+parsing/RAG, speech transcription, TTS caching, PDF reports, SQLite storage,
+and the webcam body language heuristics. External APIs (Groq LLM, Groq
+Whisper) are mocked everywhere except a handful of live smoke tests, which
+skip automatically when `GROQ_API_KEY` isn't set — so the full suite (and CI)
+runs green with zero API keys. The MediaPipe face/pose landmarkers are mocked
+in tests too, so none of this needs a real webcam or a network download of
+the MediaPipe model bundles.
 
 Lint with:
 
@@ -271,6 +283,15 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
   transcription errors carry that mismatch too.
 - **Single-speaker, English-only.** No diarization, and prompts/scoring
   assume English answers.
+- **Body language is heuristic, not a trained model.** Eye contact and
+  posture come from geometry on MediaPipe's face/pose landmarks (head-pose
+  angle thresholds, shoulder tilt, nose-to-shoulder distance) — not a model
+  trained and validated on labeled interview footage, the way the fluency
+  score is. Treat the eye-contact/posture numbers as a rough, indicative
+  signal to practice against, not a precise or validated measurement.
+  Streamlit also has no built-in continuous video recorder, so the webcam
+  feature works from a handful of still snapshots taken during an answer
+  rather than a full video stream — another reason the counts are coarse.
 - **Ephemeral demo storage.** See [Deployment](#deployment) above.
 
 ## Future improvements
@@ -279,7 +300,9 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
       fluency training set to close the read-aloud → spontaneous-speech gap.
 - [ ] Persist the Chroma index and SQLite history to external/managed
       storage so Space restarts don't lose data.
-- [ ] Video/webcam mode for basic eye-contact and posture feedback.
+- [ ] A real continuous webcam video recorder (e.g. a custom
+      `streamlit-webrtc` component) instead of a handful of manual snapshots,
+      for a less coarse eye-contact/posture signal.
 - [ ] Multi-language support (question bank + prompts + TTS language).
 - [ ] Per-question difficulty adaptation based on how the candidate is doing
       mid-interview, not just the difficulty picked at setup.

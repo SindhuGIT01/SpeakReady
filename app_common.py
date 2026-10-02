@@ -39,6 +39,9 @@ _SESSION_STATE_DEFAULTS: dict[str, object] = {
     "session_summary": None,
     "session_role": None,
     "session_difficulty": None,
+    "webcam_enabled": False,  # Task 11: optional eye contact / posture coaching
+    "body_language_frames": [],
+    "_last_webcam_snapshot_bytes": None,
 }
 
 

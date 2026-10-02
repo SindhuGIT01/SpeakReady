@@ -89,6 +89,40 @@ FLUENCY_SCORE_WEIGHT: float = float(os.getenv("FLUENCY_SCORE_WEIGHT", "0.4"))
 # (0 = try once, no retry).
 FEEDBACK_LLM_MAX_RETRIES: int = int(os.getenv("FEEDBACK_LLM_MAX_RETRIES", "1"))
 
+# --- Body language (webcam coaching) -------------------------------------------
+# MediaPipe Tasks model bundles, downloaded once (if missing) and cached under
+# MODELS_DIR, the same way the fluency model is loaded from disk.
+FACE_LANDMARKER_MODEL_PATH: Path = MODELS_DIR / "face_landmarker.task"
+FACE_LANDMARKER_MODEL_URL: str = (
+    "https://storage.googleapis.com/mediapipe-models/face_landmarker/"
+    "face_landmarker/float16/1/face_landmarker.task"
+)
+POSE_LANDMARKER_MODEL_PATH: Path = MODELS_DIR / "pose_landmarker_lite.task"
+POSE_LANDMARKER_MODEL_URL: str = (
+    "https://storage.googleapis.com/mediapipe-models/pose_landmarker/"
+    "pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+)
+
+# A face is counted as "forward-facing" (good eye contact) when its head pose,
+# derived from MediaPipe's per-frame facial transformation matrix, stays
+# within these yaw/pitch bounds (degrees) of looking straight at the camera.
+EYE_CONTACT_YAW_THRESHOLD_DEGREES: float = float(
+    os.getenv("EYE_CONTACT_YAW_THRESHOLD_DEGREES", "25")
+)
+EYE_CONTACT_PITCH_THRESHOLD_DEGREES: float = float(
+    os.getenv("EYE_CONTACT_PITCH_THRESHOLD_DEGREES", "20")
+)
+# Minimum duration a "looking away" streak must last to count as one distinct event.
+LOOKING_AWAY_MIN_SECONDS: float = float(os.getenv("LOOKING_AWAY_MIN_SECONDS", "1.0"))
+# Shoulder tilt (degrees from level) at which the posture "level" sub-score hits 0.
+POSTURE_TILT_SCALE_DEGREES: float = float(os.getenv("POSTURE_TILT_SCALE_DEGREES", "20"))
+# Reference nose-to-shoulder-midpoint distance (as a ratio of shoulder width) for
+# a fully upright, non-slouched posture; the "upright" sub-score is scaled against it.
+POSTURE_IDEAL_NECK_RATIO: float = float(os.getenv("POSTURE_IDEAL_NECK_RATIO", "0.55"))
+# Default frame sampling rate assumed for a raw frame sequence (e.g. webcam
+# snapshots) that doesn't carry its own timing metadata.
+BODY_LANGUAGE_DEFAULT_FPS: float = float(os.getenv("BODY_LANGUAGE_DEFAULT_FPS", "5.0"))
+
 
 class ConfigError(RuntimeError):
     """Raised when a required setting is missing or invalid."""

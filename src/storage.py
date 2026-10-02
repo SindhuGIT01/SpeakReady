@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS answers (
     scores_json TEXT NOT NULL,
     features_json TEXT NOT NULL,
     feedback_json TEXT NOT NULL,
-    answered_at TEXT NOT NULL
+    answered_at TEXT NOT NULL,
+    body_language_json TEXT
 )
 """
 
@@ -105,6 +106,7 @@ def save_answer(
     features: dict[str, float],
     feedback: dict[str, Any],
     answered_at: str,
+    body_language: dict[str, Any] | None = None,
 ) -> int:
     """Insert one answer row.
 
@@ -122,6 +124,9 @@ def save_answer(
             :func:`src.features.extract_features`.
         feedback: The full feedback payload, e.g. ``Feedback.model_dump()``.
         answered_at: ISO-8601 timestamp of when the answer was submitted.
+        body_language: Optional webcam body language result (Task 11), e.g.
+            ``dataclasses.asdict(BodyLanguageResult)``. ``None`` when the
+            webcam toggle wasn't used for this answer.
 
     Returns:
         The autoincremented row id of the inserted answer.
@@ -129,8 +134,8 @@ def save_answer(
     cursor = conn.execute(
         """INSERT INTO answers
            (session_id, question, is_followup, area, transcript, scores_json,
-            features_json, feedback_json, answered_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            features_json, feedback_json, answered_at, body_language_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             session_id,
             question,
@@ -141,6 +146,7 @@ def save_answer(
             json.dumps(features),
             json.dumps(feedback),
             answered_at,
+            json.dumps(body_language) if body_language is not None else None,
         ),
     )
     conn.commit()

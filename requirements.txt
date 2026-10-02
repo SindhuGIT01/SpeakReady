@@ -38,6 +38,10 @@ ipykernel~=7.3
 # Text-to-speech
 gTTS~=2.5
 
+# Webcam body language coaching (Task 11)
+mediapipe~=1.0
+opencv-python~=5.0
+
 # Config
 python-dotenv~=1.2
 
