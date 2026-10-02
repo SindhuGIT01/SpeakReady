@@ -182,6 +182,53 @@ def test_start_builds_plan_from_bank_only(monkeypatch) -> None:
     assert session.session_id
 
 
+def test_start_uses_llm_generation_for_custom_role(monkeypatch) -> None:
+    """use_custom_role=True should generate questions instead of using the bank."""
+    llm = _FakeLLM()
+    generated = [
+        {
+            "id": "custom-1",
+            "question": "How do you prioritize a backlog with competing deadlines?",
+            "category": "Product Management",
+            "difficulty": "medium",
+            "what_good_answer_covers": ["A prioritization framework"],
+        },
+        {
+            "id": "custom-2",
+            "question": "Tell me about a stakeholder conflict you resolved.",
+            "category": "Behavioral",
+            "difficulty": "medium",
+            "what_good_answer_covers": ["Situation, action, outcome"],
+        },
+    ]
+    calls: list[tuple[str, str | None, int]] = []
+
+    def fake_generate(role, difficulty=None, n=5, llm=None):
+        calls.append((role, difficulty, n))
+        return generated[:n]
+
+    monkeypatch.setattr(
+        "src.interview_agent.question_bank.generate_custom_role_questions", fake_generate
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.question_bank.get_questions",
+        lambda *a, **k: pytest.fail("get_questions() should not be called for a custom role"),
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.scorer.predict_fluency",
+        lambda features: FluencyPrediction(label="Fluent", confidence=0.8, score=80.0),
+    )
+    monkeypatch.setattr("src.interview_agent.tts.speak", lambda text, language=None: b"audio-bytes")
+
+    session = InterviewSession(llm=llm)
+    session.start(role="Business Analyst", num_questions=2, use_custom_role=True)
+
+    assert calls == [("Business Analyst", None, 2)]
+    assert len(session.question_plan) == 2
+    assert all(q.source == "custom_role" for q in session.question_plan)
+    assert {q.area for q in session.question_plan} == {"Product Management", "Behavioral"}
+
+
 def test_start_mixes_in_resume_questions(monkeypatch) -> None:
     """With a resume profile, roughly half the plan should be resume questions."""
     llm = _FakeLLM()

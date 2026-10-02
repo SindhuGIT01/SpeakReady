@@ -12,9 +12,13 @@ import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from langchain_chroma import Chroma
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_huggingface import HuggingFaceEmbeddings
+from pydantic import BaseModel, Field
 
 from src import config
 
@@ -213,6 +217,114 @@ def get_questions(
         results.extend(_from_metadata(doc.metadata) for doc in hr_docs)
 
     return results
+
+
+class GeneratedQuestion(BaseModel):
+    """A single interview question generated live for a role outside the bank."""
+
+    question: str = Field(description="The interview question text.")
+    category: str = Field(
+        description=(
+            "A short category label, e.g. 'HR', 'Behavioral', or a specific "
+            "skill/functional area for the role (e.g. 'Stakeholder Management')."
+        )
+    )
+    difficulty: str = Field(description="One of 'easy', 'medium', or 'hard'.")
+    what_good_answer_covers: list[str] = Field(
+        default_factory=list,
+        description="3-5 concrete points a strong answer to this question should cover.",
+    )
+
+
+class _GeneratedQuestionSet(BaseModel):
+    """Wrapper so the LLM's structured output for custom-role questions is one object."""
+
+    questions: list[GeneratedQuestion]
+
+
+_CUSTOM_ROLE_SYSTEM_PROMPT = """You write realistic mock-interview questions for
+a candidate interviewing for a job role that isn't in a fixed question bank.
+
+Rules:
+- Every question must be specific and directly relevant to the given role.
+- Include one or two general HR/Behavioral questions (category "HR" or
+  "Behavioral") alongside role-specific questions; give each role-specific
+  question a short, specific category label for the skill area it tests.
+- Match the requested difficulty: "easy" questions are foundational,
+  "medium" require applied judgment, "hard" probe deep expertise or tricky
+  edge cases.
+- For every question, list 3-5 concrete points a strong answer should cover
+  in what_good_answer_covers."""
+
+
+def generate_custom_role_questions(
+    role: str,
+    difficulty: str | None = None,
+    n: int = 5,
+    llm: BaseChatModel | None = None,
+) -> list[dict[str, Any]]:
+    """Generate interview questions for a role that isn't in the static bank.
+
+    Used by the Setup page's "Other (type your own role)" option: instead of
+    retrieving from the embedded ``question_bank.json``, the LLM writes a
+    fresh set of questions for the exact role the candidate typed. Results
+    are returned in the same record shape as :func:`get_questions`, so the
+    rest of the app (interview flow, scoring, feedback) handles them
+    identically regardless of where a question came from.
+
+    Args:
+        role: The free-text role the candidate typed, e.g. "DevOps Engineer".
+        difficulty: Optional difficulty to target ("easy", "medium", "hard").
+        n: Number of questions to generate.
+        llm: Optional chat model to use (mainly for testing). Defaults to
+            :func:`src.llm.get_llm`.
+
+    Returns:
+        Up to ``n`` question record dicts with ``id``, ``question``,
+        ``category``, ``difficulty``, and ``what_good_answer_covers`` keys.
+
+    Raises:
+        config.ConfigError: If no ``llm`` is given and GROQ_API_KEY is missing.
+    """
+    from src.llm import get_llm
+
+    model = llm if llm is not None else get_llm()
+    structured_model = model.with_structured_output(_GeneratedQuestionSet)
+
+    difficulty_instruction = (
+        f"Target difficulty: {difficulty}."
+        if difficulty
+        else "Mix easy, medium, and hard questions."
+    )
+    prompt = (
+        f"Role: {role}\n{difficulty_instruction}\n\n"
+        f"Generate exactly {n} interview questions for this role."
+    )
+    result = structured_model.invoke(
+        [
+            SystemMessage(content=_CUSTOM_ROLE_SYSTEM_PROMPT),
+            HumanMessage(content=prompt),
+        ]
+    )
+    question_set = (
+        result
+        if isinstance(result, _GeneratedQuestionSet)
+        else _GeneratedQuestionSet.model_validate(result)
+    )
+
+    valid_difficulties = {"easy", "medium", "hard"}
+    return [
+        {
+            "id": f"custom-{uuid4()}",
+            "question": q.question,
+            "category": q.category,
+            "difficulty": q.difficulty if q.difficulty in valid_difficulties else (
+                difficulty or "medium"
+            ),
+            "what_good_answer_covers": q.what_good_answer_covers,
+        }
+        for q in question_set.questions[:n]
+    ]
 
 
 def _main() -> None:

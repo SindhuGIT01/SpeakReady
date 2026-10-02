@@ -107,12 +107,14 @@ class QuestionItem:
     Attributes:
         id: Unique identifier for this question instance.
         text: The question text.
-        source: Where the question came from, ``"bank"`` or ``"resume"``.
-        area: Category (question-bank questions) or resume section
+        source: Where the question came from: ``"bank"`` (static question
+            bank), ``"resume"`` (resume-grounded), or ``"custom_role"``
+            (LLM-generated for a role outside the bank).
+        area: Category (bank/custom-role questions) or resume section
             (resume questions); used to group scores for the session
             summary. Follow-ups inherit their parent question's area.
         what_good_answer_covers: Key points a strong answer should cover,
-            when known (only set for question-bank questions).
+            when known (set for bank and custom-role questions).
         is_followup: Whether this is a follow-up to another question.
         parent_id: The id of the main question this follows up on, if any.
     """
@@ -376,6 +378,7 @@ class InterviewSession:
         difficulty: str | None = None,
         resume_profile: ResumeProfile | None = None,
         num_questions: int = 6,
+        use_custom_role: bool = False,
     ) -> list[QuestionItem]:
         """Build a question plan and initialize a fresh session.
 
@@ -385,13 +388,23 @@ class InterviewSession:
         is given, split roughly evenly and interleaved.
 
         Args:
-            role: Target job role, e.g. "Java Developer".
+            role: Target job role, e.g. "Java Developer". When
+                ``use_custom_role`` is true, this is the free-text role the
+                candidate typed themselves, e.g. "DevOps Engineer".
             difficulty: Optional difficulty filter ("easy", "medium", "hard").
             resume_profile: Optional extracted resume profile (Task 3). When
                 given, roughly half the plan is personalized questions
                 grounded in it.
             num_questions: Total number of main questions to plan (follow-ups
                 are added on top of this during the interview).
+            use_custom_role: When true, questions for ``role`` are generated
+                live with the LLM
+                (:func:`src.question_bank.generate_custom_role_questions`)
+                instead of retrieved from the static question bank — for
+                roles the bank doesn't cover. The resulting
+                :class:`QuestionItem`\\ s carry ``source="custom_role"`` but
+                otherwise flow through scoring and feedback identically to
+                bank questions.
 
         Returns:
             The planned list of :class:`QuestionItem`, in order.
@@ -405,14 +418,23 @@ class InterviewSession:
         resume_count = min(num_questions // 2, num_questions) if resume_profile is not None else 0
         bank_count = num_questions - resume_count
 
+        bank_source = "custom_role" if use_custom_role else "bank"
         bank_items: list[QuestionItem] = []
         if bank_count > 0:
-            for q in question_bank.get_questions(role, difficulty=difficulty, n=bank_count):
+            if use_custom_role:
+                bank_questions = question_bank.generate_custom_role_questions(
+                    role, difficulty=difficulty, n=bank_count, llm=self._get_llm()
+                )
+            else:
+                bank_questions = question_bank.get_questions(
+                    role, difficulty=difficulty, n=bank_count
+                )
+            for q in bank_questions:
                 bank_items.append(
                     QuestionItem(
                         id=str(uuid4()),
                         text=q["question"],
-                        source="bank",
+                        source=bank_source,
                         area=q["category"],
                         what_good_answer_covers=q["what_good_answer_covers"],
                     )

@@ -42,6 +42,12 @@ real ML model I trained myself, not just an LLM prompt.
   filtered by role and difficulty.
 - 📄 **Resume-grounded questions** — upload a PDF resume and get questions
   generated from *your* actual projects and skills, not generic ones.
+- 🧩 **Practice for any role, not just the ones in the bank** — pick
+  "Other (type your own role)" on Setup and type a role like "Business
+  Analyst" or "DevOps Engineer"; the LLM writes a fresh set of questions for
+  it on the spot, in the same structure as the built-in question bank, so
+  the rest of the interview (scoring, feedback, follow-ups) works exactly
+  the same either way.
 - 🎙️ **Real speech, not text boxes** — answer out loud; Groq's hosted Whisper
   API transcribes it with word-level timestamps.
 - 📊 **ML-scored fluency** — a Random Forest model I trained on 5,000

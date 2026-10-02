@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import pytest
 from langchain_chroma import Chroma
 
 from src.question_bank import (
     HR_CATEGORIES,
     TECHNICAL_CATEGORIES,
+    GeneratedQuestion,
+    _GeneratedQuestionSet,
     _get_embeddings,
+    generate_custom_role_questions,
     get_questions,
     ingest_questions,
     load_question_bank,
@@ -102,3 +107,98 @@ def test_get_questions_respects_requested_count(vectorstore: Chroma) -> None:
 
     assert len(get_questions("SQL Developer", None, 3, vectorstore=vectorstore)) == 3
     assert len(get_questions("SQL Developer", None, 8, vectorstore=vectorstore)) == 8
+
+
+# --- generate_custom_role_questions ---------------------------------------------
+
+
+def test_generate_custom_role_questions_matches_bank_schema() -> None:
+    """Generated questions must carry every key get_questions() results have."""
+    mock_question_set = _GeneratedQuestionSet(
+        questions=[
+            GeneratedQuestion(
+                question="How would you prioritize conflicting stakeholder requests?",
+                category="Stakeholder Management",
+                difficulty="medium",
+                what_good_answer_covers=[
+                    "A concrete prioritization framework",
+                    "An example of a real trade-off made",
+                ],
+            ),
+            GeneratedQuestion(
+                question="Tell me about a time you had to push back on a deadline.",
+                category="Behavioral",
+                difficulty="medium",
+                what_good_answer_covers=["Situation, action, outcome"],
+            ),
+        ]
+    )
+    mock_structured = MagicMock()
+    mock_structured.invoke.return_value = mock_question_set
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = mock_structured
+
+    questions = generate_custom_role_questions(
+        "Business Analyst", difficulty="medium", n=2, llm=mock_llm
+    )
+
+    mock_llm.with_structured_output.assert_called_once_with(_GeneratedQuestionSet)
+    assert len(questions) == 2
+    for q in questions:
+        assert set(q.keys()) == {
+            "id",
+            "question",
+            "category",
+            "difficulty",
+            "what_good_answer_covers",
+        }
+        assert q["id"]
+        assert q["difficulty"] == "medium"
+    assert any("stakeholder" in q["question"].lower() for q in questions)
+
+
+def test_generate_custom_role_questions_respects_requested_count() -> None:
+    """Only the first n generated questions should be returned."""
+    mock_question_set = _GeneratedQuestionSet(
+        questions=[
+            GeneratedQuestion(
+                question=f"Question {i}",
+                category="DevOps",
+                difficulty="easy",
+                what_good_answer_covers=["A point"],
+            )
+            for i in range(5)
+        ]
+    )
+    mock_structured = MagicMock()
+    mock_structured.invoke.return_value = mock_question_set
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = mock_structured
+
+    questions = generate_custom_role_questions("DevOps Engineer", n=3, llm=mock_llm)
+
+    assert len(questions) == 3
+
+
+def test_generate_custom_role_questions_falls_back_on_invalid_difficulty() -> None:
+    """An out-of-range difficulty from the LLM should fall back, never crash."""
+    mock_question_set = _GeneratedQuestionSet(
+        questions=[
+            GeneratedQuestion(
+                question="Describe your CI/CD pipeline experience.",
+                category="DevOps",
+                difficulty="expert",  # not one of easy/medium/hard
+                what_good_answer_covers=["Concrete pipeline example"],
+            )
+        ]
+    )
+    mock_structured = MagicMock()
+    mock_structured.invoke.return_value = mock_question_set
+    mock_llm = MagicMock()
+    mock_llm.with_structured_output.return_value = mock_structured
+
+    questions = generate_custom_role_questions(
+        "DevOps Engineer", difficulty="hard", n=1, llm=mock_llm
+    )
+
+    assert questions[0]["difficulty"] == "hard"

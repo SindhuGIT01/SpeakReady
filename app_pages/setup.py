@@ -14,7 +14,23 @@ from src.resume import ResumeParseError, extract_profile, load_resume
 st.title("⚙️ Interview Setup")
 st.caption("Tell us who you're interviewing for, and optionally add your resume.")
 
-role = st.selectbox("Target role", ROLE_OPTIONS, index=0)
+_CUSTOM_ROLE_OPTION = "Other (type your own role)"
+
+role_choice = st.selectbox("Target role", [*ROLE_OPTIONS, _CUSTOM_ROLE_OPTION], index=0)
+
+custom_role = ""
+use_custom_role = role_choice == _CUSTOM_ROLE_OPTION
+if use_custom_role:
+    custom_role = st.text_input(
+        "Type the role you want to practice for",
+        placeholder="e.g. Business Analyst, DevOps Engineer",
+    ).strip()
+    st.caption(
+        "We'll ask the AI to write a fresh set of interview questions for "
+        "this role instead of pulling from the built-in question bank."
+    )
+
+role = custom_role if use_custom_role else role_choice
 difficulty = st.select_slider("Difficulty", options=DIFFICULTY_OPTIONS, value="medium")
 num_questions = st.slider("Number of questions", min_value=3, max_value=10, value=6)
 
@@ -80,30 +96,34 @@ if profile is not None:
 st.divider()
 
 if st.button("Begin Interview", type="primary"):
-    try:
-        with st.spinner("Preparing your interview..."):
-            llm = get_llm_cached()
-            conn = get_db_connection()
-            session = InterviewSession(llm=llm, conn=conn)
-            use_resume = profile is not None and st.session_state.get("resume_use")
-            session.start(
-                role=role,
-                difficulty=difficulty,
-                resume_profile=profile if use_resume else None,
-                num_questions=num_questions,
+    if use_custom_role and not custom_role:
+        st.error("Please type the role you want to practice for.")
+    else:
+        try:
+            with st.spinner("Preparing your interview..."):
+                llm = get_llm_cached()
+                conn = get_db_connection()
+                session = InterviewSession(llm=llm, conn=conn)
+                use_resume = profile is not None and st.session_state.get("resume_use")
+                session.start(
+                    role=role,
+                    difficulty=difficulty,
+                    resume_profile=profile if use_resume else None,
+                    num_questions=num_questions,
+                    use_custom_role=use_custom_role,
+                )
+            st.session_state["interview_session"] = session
+            st.session_state["interview_stage"] = "asking"
+            st.session_state["current_question"] = None
+            st.session_state["last_answer_result"] = None
+            st.session_state["session_summary"] = None
+            st.session_state["session_role"] = role
+            st.session_state["session_difficulty"] = difficulty
+            st.switch_page("app_pages/interview.py")
+        except config.ConfigError:
+            st.error(
+                "The AI service isn't configured yet. Please check the app's API "
+                "key setup and try again."
             )
-        st.session_state["interview_session"] = session
-        st.session_state["interview_stage"] = "asking"
-        st.session_state["current_question"] = None
-        st.session_state["last_answer_result"] = None
-        st.session_state["session_summary"] = None
-        st.session_state["session_role"] = role
-        st.session_state["session_difficulty"] = difficulty
-        st.switch_page("app_pages/interview.py")
-    except config.ConfigError:
-        st.error(
-            "The AI service isn't configured yet. Please check the app's API "
-            "key setup and try again."
-        )
-    except Exception:
-        st.error("Something went wrong while preparing your interview. Please try again.")
+        except Exception:
+            st.error("Something went wrong while preparing your interview. Please try again.")
