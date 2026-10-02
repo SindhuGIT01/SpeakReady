@@ -12,7 +12,7 @@ tracking your progress across sessions.
 [![Streamlit](https://img.shields.io/badge/streamlit-1.64-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**🔗 Live demo:** _[add your Hugging Face Space link here after deploying — see [Deployment](#deployment)]_
+**🔗 Live demo:** [speakready-sindhu.streamlit.app](https://speakready-sindhu.streamlit.app)
 
 ![SpeakReady demo](docs/demo.gif)
 <sub>Demo GIF placeholder — see the [recording checklist](#recording-the-demo-gif) below.</sub>
