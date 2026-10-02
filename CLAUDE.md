@@ -13,6 +13,7 @@ gives LLM-based feedback, asks follow-up questions, and tracks progress over tim
 - **Text-to-speech:** gTTS
 - **Storage:** SQLite for session history
 - **Body language:** MediaPipe Face Landmarker + Pose Landmarker (eye contact, posture heuristics)
+- **Replay timeline:** Plotly, for filler/pause/pace markers over the answer (`src/timeline.py`)
 - **Tests:** pytest
 
 ## Folder structure
@@ -67,3 +68,4 @@ speakready/
 | 9 | Streamlit app + progress tracker (SQLite) | ⬜ |
 | 10 | Tests, README, deployment | ✅ Done |
 | 11 | Webcam body language coach (eye contact, posture) | ✅ Done |
+| 12 | Answer replay timeline (filler/pause/pace markers) | ✅ Done |

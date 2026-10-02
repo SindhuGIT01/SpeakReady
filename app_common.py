@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import sqlite3
 
+import plotly.graph_objects as go
 import streamlit as st
 
 from src import config, question_bank, storage
 from src.llm import get_llm
+from src.timeline import Marker
 
 # Role choices offered on the Setup page. Passed straight through as the
 # `role` argument to InterviewSession.start(), which uses it both as the
@@ -42,7 +44,20 @@ _SESSION_STATE_DEFAULTS: dict[str, object] = {
     "webcam_enabled": False,  # Task 11: optional eye contact / posture coaching
     "body_language_frames": [],
     "_last_webcam_snapshot_bytes": None,
+    "last_answer_audio": None,  # Task 12: replay timeline
+    "last_answer_markers": [],
 }
+
+# Timeline marker colors/labels for the Task 12 replay chart, keyed by
+# src.timeline.Marker.type.
+_MARKER_STYLE: dict[str, tuple[str, str]] = {
+    "filler": ("#f5a623", "Filler word"),  # amber
+    "long_pause": ("#1f77b4", "Long pause"),  # blue
+    "fast_speech": ("#e74c3c", "Fast speech"),  # red
+}
+# A near-instant marker (e.g. a single short filler word) still needs a
+# visible width on the chart.
+_MIN_MARKER_SECONDS = 0.15
 
 
 def init_session_state() -> None:
@@ -84,3 +99,48 @@ def ensure_question_bank_ingested() -> int:
         The number of newly added questions (0 if already ingested).
     """
     return question_bank.ingest_questions()
+
+
+def render_timeline_chart(markers: list[Marker], total_duration: float) -> go.Figure:
+    """Build the Task 12 answer replay timeline as a Plotly horizontal bar chart.
+
+    One trace per marker type (filler/long_pause/fast_speech) so the legend
+    doubles as a color key; hovering (or tapping, on mobile) a bar shows its
+    label, e.g. ``'filler: "um" at 4.2s'``.
+
+    Args:
+        markers: Markers from :func:`src.timeline.build_timeline`, in any order.
+        total_duration: The answer's total duration in seconds, used to size
+            the time axis.
+
+    Returns:
+        A Plotly figure ready for ``st.plotly_chart``.
+    """
+    fig = go.Figure()
+    for marker_type, (color, legend_label) in _MARKER_STYLE.items():
+        type_markers = [m for m in markers if m.type == marker_type]
+        if not type_markers:
+            continue
+        fig.add_trace(
+            go.Bar(
+                x=[max(m.end - m.start, _MIN_MARKER_SECONDS) for m in type_markers],
+                y=["Answer"] * len(type_markers),
+                base=[m.start for m in type_markers],
+                orientation="h",
+                name=legend_label,
+                marker_color=color,
+                hovertext=[m.label for m in type_markers],
+                hoverinfo="text",
+                width=0.6,
+            )
+        )
+
+    fig.update_layout(
+        barmode="overlay",
+        height=160,
+        margin={"l": 10, "r": 10, "t": 10, "b": 40},
+        xaxis={"title": "Seconds into your answer", "range": [0, max(total_duration, 0.1)]},
+        yaxis={"visible": False},
+        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02},
+    )
+    return fig

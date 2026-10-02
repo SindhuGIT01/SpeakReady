@@ -62,6 +62,12 @@ real ML model I trained myself, not just an LLM prompt.
   with MediaPipe's face/pose landmarks, because interviews are about presence,
   not just words. No webcam, no permission, no toggle — the interview works
   exactly the same either way.
+- ⏱️ **Answer replay timeline + near-real-time filler alert** — replay your
+  recorded answer under a visual timeline marking every filler word (amber),
+  long pause (blue), and fast-speech stretch (red); a quick filler/pause count
+  also appears the moment transcription finishes, before the slower LLM
+  feedback call below it loads. See [Limitations](#limitations) for why this
+  is near-real-time rather than truly live.
 
 ## Architecture
 
@@ -79,12 +85,14 @@ flowchart TD
     Candidate -. "optional webcam snapshots" .-> BodyLang["Body Language Heuristics\n(MediaPipe Face + Pose)"]
 
     Whisper --> Features["Feature Extraction\n(WPM, pauses, fillers, TTR...)"]
+    Whisper --> Timeline["Replay Timeline\n(filler/pause/pace markers)"]
     Features --> Fluency["ML Fluency Model\n(Random Forest)"]
     Whisper --> Feedback["LLM Feedback Engine\n(Groq openai/gpt-oss-120b)"]
 
     Fluency --> Score["Combined Score"]
     Feedback --> Score
     BodyLang -. "eye contact + posture" .-> Score
+    Timeline -- "quick filler/pause count" --> Candidate
     Score --> Agent
 
     Agent -- "follow-up decision" --> Agent
@@ -109,8 +117,9 @@ Whisper-dependent paths are mocked in tests and skipped live without a key.
 | RAG | LangChain + [Chroma](https://www.trychroma.com/) + HuggingFace `sentence-transformers/all-MiniLM-L6-v2` |
 | ML | scikit-learn (Random Forest) / XGBoost, features via [librosa](https://librosa.org/) |
 | Body language | [MediaPipe](https://ai.google.dev/edge/mediapipe) Face Landmarker + Pose Landmarker, via OpenCV |
+| Replay timeline | [Plotly](https://plotly.com/python/) for the filler/pause/pace marker chart |
 | Storage | SQLite (session history), PDF export via `fpdf2` |
-| Testing | pytest, 113 tests, mocked external APIs + auto-skipped live tests |
+| Testing | pytest, 128 tests, mocked external APIs + auto-skipped live tests |
 | CI | GitHub Actions — pytest + [ruff](https://docs.astral.sh/ruff/) on every push |
 
 All of it runs on free tiers — no paid API keys required.
@@ -181,6 +190,7 @@ speakready/
 │   ├── feedback.py            # LLM content-feedback engine
 │   ├── prompts.py             # Versioned LLM prompts
 │   ├── body_language.py       # Webcam eye contact / posture heuristics (MediaPipe)
+│   ├── timeline.py             # Answer replay timeline: filler/pause/pace markers
 │   ├── interview_agent.py     # Stateful InterviewSession: plan, follow-ups, summary
 │   ├── storage.py             # SQLite persistence for sessions/answers
 │   └── report.py              # PDF report generation
@@ -189,7 +199,7 @@ speakready/
 │   └── resumes/                # User uploads (git-ignored)
 ├── models/                    # Trained fluency model + metrics.json
 ├── notebooks/                 # Model training notebook (Task 6)
-├── tests/                     # pytest suite (113 tests)
+├── tests/                     # pytest suite (128 tests)
 ├── .github/workflows/ci.yml   # CI: pytest + ruff on every push
 └── requirements.txt
 ```
@@ -200,15 +210,16 @@ speakready/
 python -m pytest -v
 ```
 
-113 tests cover feature extraction, the fluency scorer, the LLM feedback
+128 tests cover feature extraction, the fluency scorer, the LLM feedback
 engine, the interview agent's question planning and follow-up logic, resume
 parsing/RAG, speech transcription, TTS caching, PDF reports, SQLite storage,
-and the webcam body language heuristics. External APIs (Groq LLM, Groq
-Whisper) are mocked everywhere except a handful of live smoke tests, which
-skip automatically when `GROQ_API_KEY` isn't set — so the full suite (and CI)
-runs green with zero API keys. The MediaPipe face/pose landmarkers are mocked
-in tests too, so none of this needs a real webcam or a network download of
-the MediaPipe model bundles.
+the webcam body language heuristics, and the replay timeline's marker
+placement. External APIs (Groq LLM, Groq Whisper) are mocked everywhere
+except a handful of live smoke tests, which skip automatically when
+`GROQ_API_KEY` isn't set — so the full suite (and CI) runs green with zero
+API keys. The MediaPipe face/pose landmarkers are mocked in tests too, so
+none of this needs a real webcam or a network download of the MediaPipe
+model bundles.
 
 Lint with:
 
@@ -292,6 +303,16 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
   Streamlit also has no built-in continuous video recorder, so the webcam
   feature works from a handful of still snapshots taken during an answer
   rather than a full video stream — another reason the counts are coarse.
+- **The filler/pause alert is near-real-time, not live.** Streamlit's
+  execution model reruns the whole page per interaction; it has no way to
+  stream microphone audio to the backend word-by-word while you're still
+  talking. So the "live" signal here is the fastest honest substitute: the
+  answer is transcribed once you finish, a filler/pause/pace count is
+  computed locally from that transcript (no LLM call, so it's fast) and
+  shown immediately, and only then does the slower LLM feedback call run.
+  It's feedback right after you stop talking, not feedback while you talk —
+  genuine word-by-word real-time coaching would need a different frontend
+  (e.g. a WebSocket/streaming-ASR setup) in place of Streamlit's rerun model.
 - **Ephemeral demo storage.** See [Deployment](#deployment) above.
 
 ## Future improvements
@@ -303,6 +324,9 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
 - [ ] A real continuous webcam video recorder (e.g. a custom
       `streamlit-webrtc` component) instead of a handful of manual snapshots,
       for a less coarse eye-contact/posture signal.
+- [ ] True word-by-word live filler alerts via a streaming-ASR frontend
+      (e.g. a WebSocket client), instead of today's near-real-time,
+      post-answer timeline.
 - [ ] Multi-language support (question bank + prompts + TTS language).
 - [ ] Per-question difficulty adaptation based on how the candidate is doing
       mid-interview, not just the difficulty picked at setup.

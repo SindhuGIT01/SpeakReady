@@ -123,6 +123,13 @@ POSTURE_IDEAL_NECK_RATIO: float = float(os.getenv("POSTURE_IDEAL_NECK_RATIO", "0
 # snapshots) that doesn't carry its own timing metadata.
 BODY_LANGUAGE_DEFAULT_FPS: float = float(os.getenv("BODY_LANGUAGE_DEFAULT_FPS", "5.0"))
 
+# --- Answer replay timeline (Task 12) ------------------------------------------
+# A "fast_speech" marker is raised over any stretch where a rolling window of
+# this many consecutive words is spoken faster than this local WPM.
+# LONG_PAUSE_THRESHOLD_SECONDS (above) is reused as-is for "long_pause" markers.
+FAST_SPEECH_WINDOW_WORDS: int = int(os.getenv("FAST_SPEECH_WINDOW_WORDS", "5"))
+FAST_SPEECH_WPM_THRESHOLD: float = float(os.getenv("FAST_SPEECH_WPM_THRESHOLD", "200"))
+
 
 class ConfigError(RuntimeError):
     """Raised when a required setting is missing or invalid."""

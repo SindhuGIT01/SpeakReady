@@ -462,6 +462,33 @@ class InterviewSession:
             InterviewError: If no question is currently pending.
         """
         transcript = speech.transcribe(audio)
+        return self.submit_transcript(transcript, body_language_frames)
+
+    def submit_transcript(
+        self,
+        transcript: Transcript,
+        body_language_frames: Sequence[Any] | None = None,
+    ) -> AnswerResult:
+        """Score an already-transcribed answer, without re-transcribing it.
+
+        Lets a caller transcribe once, compute something quick from that
+        transcript (e.g. the Task 12 filler/pause "quick signal", shown in
+        the UI before the slower LLM feedback call below finishes), and only
+        then hand the same :class:`~src.speech.Transcript` here — instead of
+        paying for a second Whisper call via :meth:`submit_answer`.
+
+        Args:
+            transcript: An already-transcribed answer to the current
+                question, e.g. from :func:`src.speech.transcribe`.
+            body_language_frames: Optional webcam frames captured during the
+                answer (Task 11); see :meth:`submit_answer`.
+
+        Returns:
+            The :class:`AnswerResult` for this answer.
+
+        Raises:
+            InterviewError: If no question is currently pending.
+        """
         return self._process_transcript(transcript, body_language_frames)
 
     def submit_text_answer(

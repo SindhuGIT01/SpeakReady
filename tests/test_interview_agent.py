@@ -313,6 +313,31 @@ def test_submit_answer_uses_transcribe(monkeypatch) -> None:
     assert result.transcript.text == "A transcribed spoken answer."
 
 
+def test_submit_transcript_does_not_call_transcribe(monkeypatch) -> None:
+    """submit_transcript() (Task 12's quick-signal path) must not re-transcribe."""
+    from unittest.mock import MagicMock
+
+    from src.speech import Transcript
+
+    llm = _FakeLLM()
+    transcribe_mock = MagicMock()
+    monkeypatch.setattr("src.interview_agent.speech.transcribe", transcribe_mock)
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback",
+        lambda **kwargs: _feedback(),
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    transcript = Transcript(text="Already transcribed.", words=[], duration_seconds=3.0)
+    result = session.submit_transcript(transcript)
+
+    transcribe_mock.assert_not_called()
+    assert result.transcript.text == "Already transcribed."
+    assert result.feedback.overall_score == 75.0
+
+
 # --- body language (Task 11) --------------------------------------------------
 
 

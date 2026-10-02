@@ -6,11 +6,15 @@ import cv2
 import numpy as np
 import streamlit as st
 
+from app_common import render_timeline_chart
 from src import config
+from src import speech as speech_mod
+from src.features import extract_features
 from src.feedback import FeedbackError
 from src.interview_agent import InterviewError
 from src.scorer import ScorerError
 from src.speech import AudioValidationError, TranscriptionError
+from src.timeline import build_timeline
 
 st.title("🎙️ Interview")
 
@@ -108,11 +112,31 @@ if stage == "asking":
 
     if audio_value is not None and st.button("Submit Answer", type="primary"):
         try:
+            audio_bytes = audio_value.getvalue()
+            with st.spinner("Transcribing your answer..."):
+                transcript = speech_mod.transcribe(audio_bytes)
+
+            # "Live" filler alert (Task 12): Streamlit can't stream mic audio
+            # word-by-word, so this is the fastest honest substitute — a quick
+            # count computed locally (no LLM call) and shown immediately,
+            # before the slower full-feedback call below even starts.
+            markers = build_timeline(transcript)
+            quick_features = extract_features(transcript)
+            fast_speech_count = sum(1 for m in markers if m.type == "fast_speech")
+            st.success(
+                f"⚡ Quick signal: {quick_features['filler_count']:.0f} filler word(s), "
+                f"{quick_features['long_pause_count']:.0f} long pause(s), "
+                f"{fast_speech_count} fast-speech stretch(es)"
+            )
+
             body_language_frames = st.session_state.get("body_language_frames") or None
-            with st.spinner("Analyzing your answer..."):
-                result = session.submit_answer(
-                    audio_value.getvalue(), body_language_frames=body_language_frames
+            with st.spinner("Scoring fluency and generating full feedback..."):
+                result = session.submit_transcript(
+                    transcript, body_language_frames=body_language_frames
                 )
+
+            st.session_state["last_answer_audio"] = audio_bytes
+            st.session_state["last_answer_markers"] = markers
             st.session_state["last_answer_result"] = result
             st.session_state["interview_stage"] = "reviewing"
             st.rerun()
@@ -134,6 +158,21 @@ elif stage == "reviewing":
     fluency = result.fluency_result
 
     st.success("Here's your feedback")
+
+    last_answer_audio = st.session_state.get("last_answer_audio")
+    if last_answer_audio:
+        st.caption("Replay your answer:")
+        st.audio(last_answer_audio, format="audio/wav")
+
+    markers = st.session_state.get("last_answer_markers") or []
+    if markers:
+        st.plotly_chart(
+            render_timeline_chart(markers, result.transcript.duration_seconds),
+            use_container_width=True,
+        )
+        st.caption(
+            "🟧 filler word · 🟦 long pause · 🟥 fast speech — hover a bar for details."
+        )
 
     score_col, fluency_col, wpm_col, filler_col = st.columns(4)
     score_col.metric("Overall score", f"{fb.overall_score:.0f}/100")
@@ -182,5 +221,7 @@ elif stage == "reviewing":
     if st.button("Continue", type="primary"):
         st.session_state["current_question"] = None
         st.session_state["last_answer_result"] = None
+        st.session_state["last_answer_audio"] = None
+        st.session_state["last_answer_markers"] = []
         st.session_state["interview_stage"] = "asking"
         st.rerun()

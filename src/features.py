@@ -9,6 +9,7 @@ time in the app, so the two never drift out of sync.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from functools import lru_cache
 
 from src import config
@@ -81,21 +82,24 @@ def _single_word_fillers() -> frozenset[str]:
     )
 
 
-def _count_fillers(tokens: list[str]) -> int:
-    """Count filler words and phrases in a normalized token stream.
+def _iter_filler_spans(tokens: list[str]) -> Iterator[tuple[int, int]]:
+    """Locate each filler occurrence in a normalized token stream.
+
+    The single source of truth for filler matching: both :func:`_count_fillers`
+    (for the ML fluency features) and :func:`find_filler_words` (for the
+    answer replay timeline, Task 12) are built on this.
 
     Args:
         tokens: Normalized (lowercased, punctuation-stripped) word tokens.
 
-    Returns:
-        The number of filler occurrences, treating each matched multi-word
-        phrase as a single occurrence and skipping "like" when it is
-        preceded by a word that suggests ordinary verb usage.
+    Yields:
+        ``(start_index, span_length)`` for each filler occurrence, treating a
+        matched multi-word phrase as one occurrence and skipping "like" when
+        it's preceded by a word that suggests ordinary verb usage.
     """
     phrases = _filler_phrases()
     singles = _single_word_fillers()
 
-    count = 0
     i = 0
     n = len(tokens)
     while i < n:
@@ -103,23 +107,71 @@ def _count_fillers(tokens: list[str]) -> int:
         for phrase in phrases:
             plen = len(phrase)
             if tuple(tokens[i : i + plen]) == phrase:
-                count += 1
                 matched_len = plen
                 break
         if matched_len:
+            yield i, matched_len
             i += matched_len
             continue
 
         token = tokens[i]
         if token in singles:
-            count += 1
+            yield i, 1
         elif token == "like":
             prev_token = tokens[i - 1] if i > 0 else ""
             if prev_token not in _VERB_PRECEDING_LIKE:
-                count += 1
+                yield i, 1
         i += 1
 
-    return count
+
+def _count_fillers(tokens: list[str]) -> int:
+    """Count filler words and phrases in a normalized token stream.
+
+    Args:
+        tokens: Normalized (lowercased, punctuation-stripped) word tokens.
+
+    Returns:
+        The number of filler occurrences; see :func:`_iter_filler_spans`.
+    """
+    return sum(1 for _ in _iter_filler_spans(tokens))
+
+
+def _normalized_word_tokens(words: list[Word]) -> tuple[list[Word], list[str]]:
+    """Pair each word with its normalized token, dropping punctuation-only words.
+
+    Args:
+        words: Word-level timestamps, in speaking order.
+
+    Returns:
+        A ``(filtered_words, tokens)`` pair, kept in parallel: ``tokens[i]``
+        is the normalized form of ``filtered_words[i]``.
+    """
+    pairs = [(w, _normalize_token(w.word)) for w in words]
+    pairs = [(w, t) for w, t in pairs if t]
+    if not pairs:
+        return [], []
+    filtered_words, tokens = zip(*pairs, strict=True)
+    return list(filtered_words), list(tokens)
+
+
+def find_filler_words(transcript: Transcript) -> list[list[Word]]:
+    """Locate every filler word/phrase occurrence, with its exact word span.
+
+    Used by the answer replay timeline (Task 12) to place "filler" markers
+    at the right timestamps; uses the same matching logic (including the
+    "like" verb-usage exception) as the ML fluency features, so the two
+    never disagree on what counts as a filler.
+
+    Args:
+        transcript: The transcript to scan.
+
+    Returns:
+        One list of consecutive :class:`~src.speech.Word` per filler
+        occurrence (length 1 for a single-word filler, length 2+ for a
+        phrase like "you know"), in transcript order.
+    """
+    filtered_words, tokens = _normalized_word_tokens(transcript.words)
+    return [filtered_words[start : start + length] for start, length in _iter_filler_spans(tokens)]
 
 
 def _count_repetitions(tokens: list[str]) -> int:
@@ -135,8 +187,11 @@ def _count_repetitions(tokens: list[str]) -> int:
     return sum(1 for prev, cur in zip(tokens, tokens[1:], strict=False) if prev == cur)
 
 
-def _pause_gaps(words: list[Word]) -> list[float]:
+def pause_gaps(words: list[Word]) -> list[float]:
     """Silence durations between consecutive words.
+
+    Public (rather than module-private) because the answer replay timeline
+    (Task 12) also needs it, to place "long_pause" markers.
 
     Args:
         words: Word-level timestamps, in speaking order.
@@ -187,13 +242,13 @@ def extract_features(transcript: Transcript) -> dict[str, float]:
 
     words_per_minute = (word_count / duration * 60) if duration > 0 else 0.0
 
-    gaps = _pause_gaps(words)
+    gaps = pause_gaps(words)
     pauses = [g for g in gaps if g > config.PAUSE_THRESHOLD_SECONDS]
     long_pauses = [g for g in pauses if g > config.LONG_PAUSE_THRESHOLD_SECONDS]
     mean_pause_duration = sum(pauses) / len(pauses) if pauses else 0.0
     total_pause_ratio = sum(pauses) / duration if duration > 0 else 0.0
 
-    tokens = [t for t in (_normalize_token(w.word) for w in words) if t]
+    _, tokens = _normalized_word_tokens(words)
     filler_count = _count_fillers(tokens)
     filler_rate = (filler_count / word_count * 100) if word_count > 0 else 0.0
     repetition_count = _count_repetitions(tokens)
