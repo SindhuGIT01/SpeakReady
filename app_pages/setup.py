@@ -129,6 +129,7 @@ if st.button("Begin Interview", type="primary"):
                 "The AI service isn't configured yet. Please check the app's API "
                 "key setup and try again."
             )
-        except Exception:
+        except Exception as exc:
             logger.exception("Failed to start an interview session")
             st.error("Something went wrong while preparing your interview. Please try again.")
+            st.exception(exc)  # TEMP debug: remove once the live-deploy bug is diagnosed
