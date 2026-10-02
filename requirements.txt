@@ -39,8 +39,13 @@ ipykernel~=7.3
 gTTS~=2.5
 
 # Webcam body language coaching (Task 11)
+# No separate opencv-python(-headless) pin: mediapipe hard-depends on
+# opencv-contrib-python, and installing a second opencv distribution
+# alongside it breaks the shared `cv2` package (e.g. cv2.cvtColor missing).
+# body_language.py's `import cv2` is satisfied by mediapipe's own dependency.
+# See packages.txt for the system libs that opencv-contrib-python needs to
+# import at all inside a minimal container (e.g. HF Spaces).
 mediapipe~=1.0
-opencv-python~=5.0
 
 # Config
 python-dotenv~=1.2

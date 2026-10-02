@@ -283,13 +283,34 @@ The live demo runs on [Hugging Face Spaces](https://huggingface.co/spaces)
 5. **Add your secret.** Space → **Settings** → **Variables and secrets** →
    **New secret** → name it `GROQ_API_KEY`, paste your key. `src/config.py`
    reads it the same way it reads a local `.env` — no code changes needed.
-6. **Wait for the build**, then open the Space. The first request will take
-   longer than local runs (downloading the embedding model + building the
-   Chroma index inside the container), same as the first local run.
+6. **Wait for the build**, then open the Space. Check progress under the
+   **Logs** tab (or **"Building"** status banner) — if the build fails, the
+   stack trace there is almost always the fastest way to see why; a
+   `pip install` failure or a crash on `import mediapipe`/`import cv2` are
+   the two most common causes (see **System packages** below). The first
+   successful request will also take longer than local runs (downloading
+   the embedding model + building the Chroma index inside the container),
+   same as the first local run.
 
 **Model file handling:** `models/fluency_model.joblib` (~6 MB) is small
 enough to commit directly to git — no Git LFS needed. It's already tracked
-in this repo and ships with the Space automatically.
+in this repo and ships with the Space automatically. The two MediaPipe
+`.task` bundles (`models/*.task`, ~9 MB combined) are intentionally
+git-ignored and download themselves from Google's model-bundle CDN on first
+use, inside the Space container, so they never need to be committed.
+
+**System packages:** `packages.txt` (committed at the repo root) installs
+`libgl1` and `libglib2.0-0` via apt on the Space. mediapipe's compiled core
+(via its `opencv-contrib-python` dependency) links against `libGL` even for
+plain CPU inference, and Spaces' slim Streamlit container doesn't ship it —
+without `packages.txt`, the Space builds fine but crashes at runtime on the
+first `import mediapipe` with `ImportError: libGL.so.1: cannot open shared
+object file`. Don't additionally pin `opencv-python` or
+`opencv-python-headless` in `requirements.txt`: mediapipe already pulls in
+`opencv-contrib-python`, and having two opencv distributions installed at
+once corrupts the shared `cv2` module (symptoms like `cv2.cvtColor` or
+`cv2.VideoCapture` missing) — this repo hit exactly that while preparing
+this deployment and removed the redundant pin.
 
 **Note on storage:** Hugging Face's free CPU tier uses ephemeral storage —
 the SQLite progress history and Chroma index reset when the Space restarts
@@ -348,6 +369,19 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
   noise, or just an unusual/rare word the ASR wasn't expecting — this
   signal can't tell those apart.
 - **Ephemeral demo storage.** See [Deployment](#deployment) above.
+- **Mic/webcam permissions on the hosted Space.** `st.audio_input` and
+  `st.camera_input` ask the browser for mic/camera access, which needs a
+  secure (HTTPS) context — Spaces serve over HTTPS, so this works the same
+  as localhost. If a permission prompt doesn't appear inside the embedded
+  Space page on huggingface.co, open the Space's direct app URL (the
+  "Embed this Space" / fullscreen link) in its own tab rather than the
+  iframe view — browsers are more consistent about granting mic/camera
+  permissions to a top-level page than to an embedded one.
+- **Free-tier cold starts.** Hugging Face's free CPU tier puts idle Spaces
+  to sleep; the first visit after a period of inactivity triggers a cold
+  restart (container boot + re-embedding the question bank), which can take
+  noticeably longer than the warm, already-running state. Expected for a
+  free portfolio demo, not a bug.
 
 ## Future improvements
 

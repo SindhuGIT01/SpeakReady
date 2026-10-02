@@ -1,0 +1,8 @@
+# System (apt) packages for Hugging Face Spaces' container.
+# mediapipe's compiled core links against libGL/libglib even for CPU-only
+# inference, and the Spaces Streamlit image is a slim Debian base that
+# doesn't ship them. Without this, `import mediapipe` (and, previously,
+# `import cv2` from the full opencv-python build) crashes with:
+#   ImportError: libGL.so.1: cannot open shared object file
+libgl1
+libglib2.0-0
