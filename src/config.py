@@ -130,6 +130,53 @@ BODY_LANGUAGE_DEFAULT_FPS: float = float(os.getenv("BODY_LANGUAGE_DEFAULT_FPS", 
 FAST_SPEECH_WINDOW_WORDS: int = int(os.getenv("FAST_SPEECH_WINDOW_WORDS", "5"))
 FAST_SPEECH_WPM_THRESHOLD: float = float(os.getenv("FAST_SPEECH_WPM_THRESHOLD", "200"))
 
+# --- Voice confidence meter (Task 13) -------------------------------------------
+# Heuristic signal-processing confidence meter, built directly on the raw
+# audio with librosa — NOT a trained model, unlike the ML fluency score
+# (Task 6), which only ever sees transcript/timing features.
+# Audio is resampled to this rate before pitch/energy analysis.
+CONFIDENCE_SAMPLE_RATE: int = int(os.getenv("CONFIDENCE_SAMPLE_RATE", "16000"))
+# pYIN f0 search range (~C2-G5), wide enough to cover typical speaking voices.
+CONFIDENCE_PITCH_FMIN_HZ: float = float(os.getenv("CONFIDENCE_PITCH_FMIN_HZ", "65"))
+CONFIDENCE_PITCH_FMAX_HZ: float = float(os.getenv("CONFIDENCE_PITCH_FMAX_HZ", "800"))
+# Pitch variability is the std-dev of voiced f0 frames in semitones (i.e.
+# log-frequency, relative to the answer's own median pitch), so it isn't
+# biased by a speaker's absolute vocal register. This is a "reasonable
+# native-speaker range" for natural pitch movement: below it reads as
+# flat/monotone, above it reads as erratic — both commonly read as nervous.
+PITCH_VARIABILITY_IDEAL_MIN_SEMITONES: float = float(
+    os.getenv("PITCH_VARIABILITY_IDEAL_MIN_SEMITONES", "1.5")
+)
+PITCH_VARIABILITY_IDEAL_MAX_SEMITONES: float = float(
+    os.getenv("PITCH_VARIABILITY_IDEAL_MAX_SEMITONES", "7.0")
+)
+# Semitones of std-dev beyond the ideal band that costs the full 100 points.
+PITCH_VARIABILITY_FALLOFF_SEMITONES: float = float(
+    os.getenv("PITCH_VARIABILITY_FALLOFF_SEMITONES", "7.0")
+)
+# Volume steadiness: the coefficient of variation (std/mean) of RMS energy
+# across coarse (~0.5s), silence-excluded windows (see src/confidence.py).
+# 0 CV (perfectly steady) scores 100; at/above this CV scores 0. Ordinary
+# clear speech still has some sentence-level loudness arc (emphasis,
+# trailing off), so this is deliberately more lenient than it would need to
+# be for literal frame-level energy.
+VOLUME_STEADINESS_CV_HIGH: float = float(os.getenv("VOLUME_STEADINESS_CV_HIGH", "0.9"))
+# Speaking energy: mean RMS amplitude, normalized against this reference
+# level (a quiet-but-clearly-audible recording); at/above it scores 100.
+SPEAKING_ENERGY_REFERENCE_RMS: float = float(os.getenv("SPEAKING_ENERGY_REFERENCE_RMS", "0.05"))
+
+# --- Pronunciation proxy signal (Task 13) ---------------------------------------
+# Groq's hosted Whisper API only exposes ASR confidence at the SEGMENT level
+# (avg_logprob), never per word (see src/pronunciation.py docstring for why
+# this is an honest proxy, not true pronunciation scoring). A segment's
+# avg_logprob below this (more negative = less confident) gets its words
+# flagged as "words to double check". OpenAI/Groq consider a segment's
+# transcription to have likely failed below -1, so -0.5 flags a wider,
+# more conservative "worth a listen" band above that failure point.
+PRONUNCIATION_LOW_CONFIDENCE_LOGPROB: float = float(
+    os.getenv("PRONUNCIATION_LOW_CONFIDENCE_LOGPROB", "-0.5")
+)
+
 
 class ConfigError(RuntimeError):
     """Raised when a required setting is missing or invalid."""

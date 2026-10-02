@@ -71,6 +71,47 @@ if body_language_rows:
     bl3.metric("Times looked away", total_looking_away)
     st.divider()
 
+voice_confidence_rows = [
+    json.loads(a["voice_confidence_json"]) for a in answers if a["voice_confidence_json"]
+]
+if voice_confidence_rows:
+    st.subheader("🎚️ Voice confidence (signal-processing heuristic)")
+    st.caption(
+        f"Based on {len(voice_confidence_rows)} of {len(answers)} answer(s) with audio."
+    )
+    avg_confidence = sum(r["confidence_score"] for r in voice_confidence_rows) / len(
+        voice_confidence_rows
+    )
+    avg_pitch = sum(r["pitch_variability"] for r in voice_confidence_rows) / len(
+        voice_confidence_rows
+    )
+    avg_volume = sum(r["volume_steadiness"] for r in voice_confidence_rows) / len(
+        voice_confidence_rows
+    )
+    avg_energy = sum(r["speaking_energy"] for r in voice_confidence_rows) / len(
+        voice_confidence_rows
+    )
+
+    vc1, vc2, vc3, vc4 = st.columns(4)
+    vc1.metric("Avg. confidence", f"{avg_confidence:.0f}/100")
+    vc2.metric("Pitch variation", f"{avg_pitch:.0f}/100")
+    vc3.metric("Volume steadiness", f"{avg_volume:.0f}/100")
+    vc4.metric("Speaking energy", f"{avg_energy:.0f}/100")
+    st.divider()
+
+pronunciation_rows = [
+    json.loads(a["pronunciation_json"]) for a in answers if a["pronunciation_json"]
+]
+total_flagged_words = sum(len(r["words_to_double_check"]) for r in pronunciation_rows)
+if pronunciation_rows and total_flagged_words:
+    st.subheader("🗣️ Words to double check (ASR confidence proxy)")
+    st.caption(
+        f"{total_flagged_words} word(s) across the session fell in the ASR's "
+        "least-confident stretches of audio — not a pronunciation verdict, just "
+        "worth a second listen."
+    )
+    st.divider()
+
 st.subheader("7-day practice plan")
 for day in summary.practice_plan:
     with st.container(border=True):

@@ -15,6 +15,7 @@ from groq import RateLimitError
 from src import config
 from src.speech import (
     AudioValidationError,
+    Segment,
     Transcript,
     TranscriptionError,
     Word,
@@ -53,6 +54,9 @@ def _verbose_json_response() -> MagicMock:
     ]
     response.duration = 1.4
     response.language = "en"
+    response.segments = [
+        {"start": 0.0, "end": 1.4, "avg_logprob": -0.2},
+    ]
     return response
 
 
@@ -101,12 +105,24 @@ def test_transcribe_returns_parsed_transcript() -> None:
     assert result.words[0] == Word(word="Hi,", start=0.0, end=0.3)
     assert result.duration_seconds == 1.4
     assert result.language == "en"
+    assert result.segments == [Segment(start=0.0, end=1.4, avg_logprob=-0.2)]
 
     client.audio.transcriptions.create.assert_called_once()
     _, kwargs = client.audio.transcriptions.create.call_args
     assert kwargs["model"] == config.WHISPER_MODEL
     assert kwargs["response_format"] == "verbose_json"
-    assert kwargs["timestamp_granularities"] == ["word"]
+    assert kwargs["timestamp_granularities"] == ["word", "segment"]
+
+
+def test_transcribe_defaults_segments_to_empty_when_absent() -> None:
+    """A response with no segments field should parse to an empty list, not raise."""
+    response = _verbose_json_response()
+    response.segments = None
+    client = _mock_client(response)
+
+    result = transcribe(SAMPLE_ANSWER_MP3.read_bytes(), client=client)
+
+    assert result.segments == []
 
 
 def test_transcribe_accepts_path() -> None:

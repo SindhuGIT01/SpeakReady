@@ -127,6 +127,55 @@ def build_report_pdf(
         )
         pdf.ln(4)
 
+    voice_confidence_rows = [
+        json.loads(row["voice_confidence_json"])
+        for row in answers
+        if row.get("voice_confidence_json")
+    ]
+    if voice_confidence_rows:
+        _add_wrapped(pdf, "Voice Confidence (signal-processing heuristic)", size=14, style="B")
+        avg_confidence = sum(r["confidence_score"] for r in voice_confidence_rows) / len(
+            voice_confidence_rows
+        )
+        avg_pitch = sum(r["pitch_variability"] for r in voice_confidence_rows) / len(
+            voice_confidence_rows
+        )
+        avg_volume = sum(r["volume_steadiness"] for r in voice_confidence_rows) / len(
+            voice_confidence_rows
+        )
+        avg_energy = sum(r["speaking_energy"] for r in voice_confidence_rows) / len(
+            voice_confidence_rows
+        )
+        _add_wrapped(
+            pdf,
+            f"Based on {len(voice_confidence_rows)} of {len(answers)} answer(s) with audio.",
+        )
+        _add_wrapped(
+            pdf,
+            f"Avg. confidence: {avg_confidence:.0f}/100  -  Pitch variation: "
+            f"{avg_pitch:.0f}/100  -  Volume steadiness: {avg_volume:.0f}/100  -  "
+            f"Speaking energy: {avg_energy:.0f}/100",
+        )
+        pdf.ln(4)
+
+    pronunciation_rows = [
+        json.loads(row["pronunciation_json"])
+        for row in answers
+        if row.get("pronunciation_json")
+    ]
+    total_flagged_words = sum(
+        len(r["words_to_double_check"]) for r in pronunciation_rows
+    )
+    if pronunciation_rows and total_flagged_words:
+        _add_wrapped(pdf, "Words To Double Check (ASR confidence proxy)", size=14, style="B")
+        _add_wrapped(
+            pdf,
+            f"{total_flagged_words} word(s) across the session fell in the ASR's "
+            "least-confident stretches of audio - not a pronunciation verdict, just "
+            "worth a second listen.",
+        )
+        pdf.ln(4)
+
     _add_wrapped(pdf, "7-Day Practice Plan", size=14, style="B")
     for day in summary.practice_plan:
         _add_wrapped(pdf, f"Day {day.day} - {day.focus}", style="B")

@@ -82,3 +82,31 @@ def test_build_report_pdf_includes_body_language_when_present() -> None:
     pdf_bytes = build_report_pdf("Backend Engineer", "medium", _sample_summary(), answers)
 
     assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_build_report_pdf_includes_voice_confidence_and_pronunciation_when_present() -> None:
+    """Task 13 payloads should not break PDF rendering when present."""
+    answers = _sample_answers()
+    answers[0]["voice_confidence_json"] = json.dumps(
+        {
+            "pitch_variability": 80.0,
+            "volume_steadiness": 90.0,
+            "speaking_energy": 70.0,
+            "confidence_score": 80.0,
+            "summary": "Confident and clear.",
+        }
+    )
+    answers[0]["pronunciation_json"] = json.dumps(
+        {
+            "words_to_double_check": [
+                {"word": "mumble", "start": 1.0, "end": 1.5, "segment_avg_logprob": -0.9}
+            ],
+            "explanation": 'Words worth a second listen: "mumble".',
+        }
+    )
+    answers[1]["voice_confidence_json"] = None
+    answers[1]["pronunciation_json"] = None
+
+    pdf_bytes = build_report_pdf("Backend Engineer", "medium", _sample_summary(), answers)
+
+    assert pdf_bytes.startswith(b"%PDF")

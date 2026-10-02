@@ -132,7 +132,9 @@ if stage == "asking":
             body_language_frames = st.session_state.get("body_language_frames") or None
             with st.spinner("Scoring fluency and generating full feedback..."):
                 result = session.submit_transcript(
-                    transcript, body_language_frames=body_language_frames
+                    transcript,
+                    body_language_frames=body_language_frames,
+                    audio_for_confidence=audio_bytes,
                 )
 
             st.session_state["last_answer_audio"] = audio_bytes
@@ -212,6 +214,29 @@ elif stage == "reviewing":
             bl_col2.metric("Posture", f"{bl.posture_score:.0f}/100")
             bl_col3.metric("Looked away", f"{bl.looking_away_count}x")
             st.caption(bl.summary)
+
+    if result.voice_confidence_result is not None:
+        vc = result.voice_confidence_result
+        with st.container(border=True):
+            st.markdown("**🎚️ Voice confidence (signal-processing heuristic)**")
+            vc_col1, vc_col2, vc_col3, vc_col4 = st.columns(4)
+            vc_col1.metric("Confidence", f"{vc.confidence_score:.0f}/100")
+            vc_col2.metric("Pitch variation", f"{vc.pitch_variability:.0f}/100")
+            vc_col3.metric("Volume steadiness", f"{vc.volume_steadiness:.0f}/100")
+            vc_col4.metric("Speaking energy", f"{vc.speaking_energy:.0f}/100")
+            st.caption(vc.summary)
+
+    if result.pronunciation_result is not None:
+        pr = result.pronunciation_result
+        with st.container(border=True):
+            st.markdown("**🗣️ Words to double check (ASR confidence proxy)**")
+            st.caption(pr.explanation)
+            if pr.words_to_double_check:
+                st.markdown(
+                    ", ".join(
+                        f'"{w.word}" at {w.start:.1f}s' for w in pr.words_to_double_check
+                    )
+                )
 
     st.markdown(f"💡 **Tip:** {fb.one_tip}")
 

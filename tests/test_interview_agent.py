@@ -403,6 +403,113 @@ def test_body_language_failure_does_not_break_the_interview(monkeypatch) -> None
     assert result.feedback.overall_score == 75.0
 
 
+# --- voice confidence / pronunciation (Task 13) --------------------------------
+
+
+def test_submit_text_answer_has_no_voice_confidence_or_pronunciation(monkeypatch) -> None:
+    """A typed answer has no real audio/ASR words, so both signals stay None."""
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_text_answer("An answer.")
+
+    assert result.voice_confidence_result is None
+    assert result.pronunciation_result is None
+
+
+def test_submit_answer_attaches_voice_confidence_result(monkeypatch) -> None:
+    """submit_answer() should run the raw audio through analyze_voice_confidence."""
+    from src.confidence import VoiceConfidenceResult
+    from src.speech import Transcript
+
+    expected = VoiceConfidenceResult(
+        pitch_variability=80.0,
+        volume_steadiness=90.0,
+        speaking_energy=70.0,
+        confidence_score=80.0,
+        summary="Confident and clear.",
+    )
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.speech.transcribe",
+        lambda audio, client=None: Transcript(
+            text="A transcribed spoken answer.", words=[], duration_seconds=5.0, language="en"
+        ),
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.confidence_mod.analyze_voice_confidence", lambda audio: expected
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_answer(b"fake-audio-bytes")
+
+    assert result.voice_confidence_result == expected
+    assert session._answers[0].voice_confidence_result == expected
+
+
+def test_voice_confidence_failure_does_not_break_the_interview(monkeypatch) -> None:
+    """A confidence-analysis failure must never take down the rest of the interview."""
+    from src.confidence import VoiceConfidenceError
+    from src.speech import Transcript
+
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.speech.transcribe",
+        lambda audio, client=None: Transcript(
+            text="A transcribed spoken answer.", words=[], duration_seconds=5.0, language="en"
+        ),
+    )
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+
+    def _boom(audio):
+        raise VoiceConfidenceError("no voice detected")
+
+    monkeypatch.setattr("src.interview_agent.confidence_mod.analyze_voice_confidence", _boom)
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    result = session.submit_answer(b"fake-audio-bytes")
+
+    assert result.voice_confidence_result is None
+    assert result.feedback.overall_score == 75.0
+
+
+def test_submit_transcript_with_words_attaches_pronunciation_result(monkeypatch) -> None:
+    """A transcript with real words should get a pronunciation proxy signal."""
+    from src.speech import Transcript, Word
+
+    llm = _FakeLLM()
+    monkeypatch.setattr(
+        "src.interview_agent.feedback_mod.generate_feedback", lambda **kwargs: _feedback()
+    )
+    llm.stub(FollowUpDecision, return_value=FollowUpDecision(should_follow_up=False))
+
+    session = _started_session(llm, monkeypatch, num_questions=1)
+    session.next_question()
+    transcript = Transcript(
+        text="Hello there.",
+        words=[Word(word="Hello", start=0.0, end=0.5), Word(word="there.", start=0.5, end=1.0)],
+        duration_seconds=1.0,
+    )
+    result = session.submit_transcript(transcript)
+
+    assert result.pronunciation_result is not None
+    assert result.pronunciation_result.words_to_double_check == []
+
+
 # --- follow-up logic ---------------------------------------------------------
 
 

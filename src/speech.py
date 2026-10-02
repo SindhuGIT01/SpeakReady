@@ -1,7 +1,8 @@
 """Speech-to-text via the Groq-hosted Whisper API.
 
 Validates uploaded audio (format, size, minimum duration), transcribes it with
-word-level timestamps, and retries automatically on rate limits.
+word-level timestamps and segment-level confidence, and retries automatically
+on rate limits.
 """
 
 from __future__ import annotations
@@ -41,6 +42,29 @@ class Word:
 
 
 @dataclass(frozen=True)
+class Segment:
+    """A chunk-level ASR result, with Whisper's own confidence signal.
+
+    Groq's hosted Whisper API never exposes a probability per *word* — only
+    per *segment* (``avg_logprob``). Used by :mod:`src.pronunciation` (Task
+    13) as a proxy for "words the ASR had trouble with", since no true
+    per-word confidence is available.
+
+    Attributes:
+        start: Start time in seconds.
+        end: End time in seconds.
+        avg_logprob: Average log-probability the model assigned this
+            segment's tokens. Closer to 0 is more confident; OpenAI/Groq
+            consider a segment's transcription to have likely failed below
+            around -1.
+    """
+
+    start: float
+    end: float
+    avg_logprob: float
+
+
+@dataclass(frozen=True)
 class Transcript:
     """The result of transcribing a spoken answer.
 
@@ -49,12 +73,15 @@ class Transcript:
         words: Word-level timestamps, in order.
         duration_seconds: Length of the audio, in seconds.
         language: Detected or requested language code (e.g. ``"en"``).
+        segments: Chunk-level ASR results with their own confidence
+            (``avg_logprob``); see :class:`Segment`.
     """
 
     text: str
     words: list[Word] = field(default_factory=list)
     duration_seconds: float = 0.0
     language: str = ""
+    segments: list[Segment] = field(default_factory=list)
 
 
 @lru_cache(maxsize=1)
@@ -166,7 +193,7 @@ def _transcribe_with_retry(client: Groq, filename: str, audio_bytes: bytes):
                 model=config.WHISPER_MODEL,
                 file=(filename, audio_bytes),
                 response_format="verbose_json",
-                timestamp_granularities=["word"],
+                timestamp_granularities=["word", "segment"],
             )
         except RateLimitError as exc:
             last_error = exc
@@ -210,9 +237,14 @@ def transcribe(audio: bytes | str | Path, client: Groq | None = None) -> Transcr
         Word(word=w["word"], start=w["start"], end=w["end"])
         for w in (getattr(response, "words", None) or [])
     ]
+    segments = [
+        Segment(start=s["start"], end=s["end"], avg_logprob=s["avg_logprob"])
+        for s in (getattr(response, "segments", None) or [])
+    ]
     return Transcript(
         text=response.text,
         words=words,
         duration_seconds=float(getattr(response, "duration", 0.0) or 0.0),
         language=getattr(response, "language", "") or "",
+        segments=segments,
     )

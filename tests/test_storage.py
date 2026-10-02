@@ -138,6 +138,67 @@ def test_save_answer_persists_body_language_result(conn: sqlite3.Connection) -> 
     assert json.loads(row["body_language_json"]) == body_language
 
 
+def test_save_answer_voice_confidence_and_pronunciation_default_to_null(
+    conn: sqlite3.Connection,
+) -> None:
+    """Answers saved without Task 13 results should store NULL, not a crash."""
+    create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")
+
+    save_answer(
+        conn,
+        "sess-1",
+        "Tell me about yourself.",
+        False,
+        "HR",
+        "I am a software engineer.",
+        {"overall_score": 80.0},
+        {"words_per_minute": 140.0},
+        {"content_score": 8},
+        "2026-01-01T00:01:00",
+    )
+
+    row = list_answers(conn, "sess-1")[0]
+    assert row["voice_confidence_json"] is None
+    assert row["pronunciation_json"] is None
+
+
+def test_save_answer_persists_voice_confidence_and_pronunciation(conn: sqlite3.Connection) -> None:
+    """Given voice_confidence/pronunciation dicts should round-trip through storage as JSON."""
+    import json
+
+    create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")
+    voice_confidence = {
+        "pitch_variability": 80.0,
+        "volume_steadiness": 90.0,
+        "speaking_energy": 70.0,
+        "confidence_score": 80.0,
+        "summary": "Confident and clear.",
+    }
+    pronunciation = {
+        "words_to_double_check": [],
+        "explanation": "The ASR was confident throughout this answer.",
+    }
+
+    save_answer(
+        conn,
+        "sess-1",
+        "Tell me about yourself.",
+        False,
+        "HR",
+        "I am a software engineer.",
+        {"overall_score": 80.0},
+        {"words_per_minute": 140.0},
+        {"content_score": 8},
+        "2026-01-01T00:01:00",
+        voice_confidence=voice_confidence,
+        pronunciation=pronunciation,
+    )
+
+    row = list_answers(conn, "sess-1")[0]
+    assert json.loads(row["voice_confidence_json"]) == voice_confidence
+    assert json.loads(row["pronunciation_json"]) == pronunciation
+
+
 def test_list_answers_returns_rows_in_submission_order(conn: sqlite3.Connection) -> None:
     """Answers should come back ordered by insertion (question order)."""
     create_session(conn, "sess-1", "Backend Engineer", None, "2026-01-01T00:00:00")

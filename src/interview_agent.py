@@ -29,12 +29,16 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field, ValidationError
 
 from src import body_language as body_language_mod
+from src import confidence as confidence_mod
 from src import features as features_mod
 from src import feedback as feedback_mod
 from src import prompts, question_bank, scorer, speech, storage, tts
+from src import pronunciation as pronunciation_mod
 from src import resume as resume_mod
 from src.body_language import BodyLanguageResult
+from src.confidence import VoiceConfidenceResult
 from src.feedback import Feedback
+from src.pronunciation import PronunciationSignal
 from src.resume import ResumeProfile
 from src.scorer import FluencyPrediction
 from src.speech import Transcript
@@ -145,6 +149,8 @@ class AnswerRecord:
     feedback: Feedback
     answered_at: datetime
     body_language_result: BodyLanguageResult | None = None
+    voice_confidence_result: VoiceConfidenceResult | None = None
+    pronunciation_result: PronunciationSignal | None = None
 
 
 @dataclass(frozen=True)
@@ -157,6 +163,8 @@ class AnswerResult:
     feedback: Feedback
     follow_up_asked: bool
     body_language_result: BodyLanguageResult | None = None
+    voice_confidence_result: VoiceConfidenceResult | None = None
+    pronunciation_result: PronunciationSignal | None = None
 
 
 def _interleave(a: list[QuestionItem], b: list[QuestionItem]) -> list[QuestionItem]:
@@ -257,6 +265,49 @@ def _analyze_body_language(frames: Sequence[Any] | None) -> BodyLanguageResult |
         return body_language_mod.analyze_video(frames)
     except (body_language_mod.BodyLanguageError, ValueError, OSError):
         return None
+
+
+def _analyze_voice_confidence(
+    audio: bytes | str | Path | None,
+) -> VoiceConfidenceResult | None:
+    """Best-effort voice confidence analysis for one answer (Task 13).
+
+    Needs the raw audio waveform (unlike the transcript-only fluency
+    features), so it's only available when the caller actually has audio
+    to hand — never for a typed answer. Any analysis failure (undecodable
+    audio, no detectable voice, etc.) must never take down the interview.
+
+    Args:
+        audio: Raw audio bytes or a path to an audio file, or ``None`` when
+            no real audio is available for this answer (e.g. a typed
+            answer).
+
+    Returns:
+        The :class:`~src.confidence.VoiceConfidenceResult`, or ``None`` if
+        no audio was given or analysis failed.
+    """
+    if audio is None:
+        return None
+    try:
+        return confidence_mod.analyze_voice_confidence(audio)
+    except (confidence_mod.VoiceConfidenceError, ValueError, OSError):
+        return None
+
+
+def _analyze_pronunciation(transcript: Transcript) -> PronunciationSignal | None:
+    """Best-effort "words to double check" proxy signal for one answer (Task 13).
+
+    Args:
+        transcript: The transcribed (or typed) answer.
+
+    Returns:
+        The :class:`~src.pronunciation.PronunciationSignal`, or ``None``
+        when there are no transcribed words to check (e.g. a typed answer,
+        which has no ASR confidence of its own).
+    """
+    if not transcript.words:
+        return None
+    return pronunciation_mod.flag_low_confidence_words(transcript)
 
 
 class InterviewSession:
@@ -448,7 +499,8 @@ class InterviewSession:
 
         Args:
             audio: Raw audio bytes or a path to an audio file, as accepted
-                by :func:`src.speech.transcribe`.
+                by :func:`src.speech.transcribe`. Also used for the Task 13
+                voice confidence meter, since real audio is available here.
             body_language_frames: Optional webcam frames captured during the
                 answer (Task 11). When given, they're run through
                 :func:`src.body_language.analyze_video`; omit this (or pass
@@ -462,12 +514,15 @@ class InterviewSession:
             InterviewError: If no question is currently pending.
         """
         transcript = speech.transcribe(audio)
-        return self.submit_transcript(transcript, body_language_frames)
+        return self.submit_transcript(
+            transcript, body_language_frames, audio_for_confidence=audio
+        )
 
     def submit_transcript(
         self,
         transcript: Transcript,
         body_language_frames: Sequence[Any] | None = None,
+        audio_for_confidence: bytes | str | Path | None = None,
     ) -> AnswerResult:
         """Score an already-transcribed answer, without re-transcribing it.
 
@@ -482,6 +537,10 @@ class InterviewSession:
                 question, e.g. from :func:`src.speech.transcribe`.
             body_language_frames: Optional webcam frames captured during the
                 answer (Task 11); see :meth:`submit_answer`.
+            audio_for_confidence: The same raw audio the caller already
+                transcribed, for the Task 13 voice confidence meter (which
+                needs the waveform, not just the transcript). Omit when no
+                real audio is available.
 
         Returns:
             The :class:`AnswerResult` for this answer.
@@ -489,7 +548,9 @@ class InterviewSession:
         Raises:
             InterviewError: If no question is currently pending.
         """
-        return self._process_transcript(transcript, body_language_frames)
+        return self._process_transcript(
+            transcript, body_language_frames, audio_for_confidence
+        )
 
     def submit_text_answer(
         self,
@@ -501,7 +562,8 @@ class InterviewSession:
         Used by the text-only CLI demo and by tests, where no audio is
         available. Duration is estimated from word count at
         ``_DEMO_ASSUMED_WPM``, so pace/pause features are approximate rather
-        than measured.
+        than measured. The Task 13 voice confidence meter needs a real
+        waveform, so it's always ``None`` here.
 
         Args:
             text: The candidate's typed answer.
@@ -526,6 +588,7 @@ class InterviewSession:
         self,
         transcript: Transcript,
         body_language_frames: Sequence[Any] | None = None,
+        audio_for_confidence: bytes | str | Path | None = None,
     ) -> AnswerResult:
         """Shared scoring/feedback/follow-up pipeline for one transcript.
 
@@ -534,6 +597,8 @@ class InterviewSession:
                 answer to the current question.
             body_language_frames: Optional webcam frames captured during the
                 answer (Task 11); see :meth:`submit_answer`.
+            audio_for_confidence: Optional raw audio for the Task 13 voice
+                confidence meter; see :meth:`submit_transcript`.
 
         Returns:
             The :class:`AnswerResult` for this answer.
@@ -558,6 +623,8 @@ class InterviewSession:
             llm=self._get_llm(),
         )
         body_language_result = _analyze_body_language(body_language_frames)
+        voice_confidence_result = _analyze_voice_confidence(audio_for_confidence)
+        pronunciation_result = _analyze_pronunciation(transcript)
 
         answered_at = datetime.now(timezone.utc)
         self._answers.append(
@@ -569,6 +636,8 @@ class InterviewSession:
                 feedback=fb,
                 answered_at=answered_at,
                 body_language_result=body_language_result,
+                voice_confidence_result=voice_confidence_result,
+                pronunciation_result=pronunciation_result,
             )
         )
 
@@ -589,6 +658,10 @@ class InterviewSession:
                 feedback=fb.model_dump(),
                 answered_at=answered_at.isoformat(),
                 body_language=asdict(body_language_result) if body_language_result else None,
+                voice_confidence=asdict(voice_confidence_result)
+                if voice_confidence_result
+                else None,
+                pronunciation=asdict(pronunciation_result) if pronunciation_result else None,
             )
 
         follow_up_asked = self._maybe_queue_follow_up(item, transcript.text, fb)
@@ -601,6 +674,8 @@ class InterviewSession:
             feedback=fb,
             follow_up_asked=follow_up_asked,
             body_language_result=body_language_result,
+            voice_confidence_result=voice_confidence_result,
+            pronunciation_result=pronunciation_result,
         )
 
     def _maybe_queue_follow_up(

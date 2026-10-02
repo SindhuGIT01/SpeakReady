@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS answers (
     features_json TEXT NOT NULL,
     feedback_json TEXT NOT NULL,
     answered_at TEXT NOT NULL,
-    body_language_json TEXT
+    body_language_json TEXT,
+    voice_confidence_json TEXT,
+    pronunciation_json TEXT
 )
 """
 
@@ -107,6 +109,8 @@ def save_answer(
     feedback: dict[str, Any],
     answered_at: str,
     body_language: dict[str, Any] | None = None,
+    voice_confidence: dict[str, Any] | None = None,
+    pronunciation: dict[str, Any] | None = None,
 ) -> int:
     """Insert one answer row.
 
@@ -127,6 +131,12 @@ def save_answer(
         body_language: Optional webcam body language result (Task 11), e.g.
             ``dataclasses.asdict(BodyLanguageResult)``. ``None`` when the
             webcam toggle wasn't used for this answer.
+        voice_confidence: Optional voice confidence meter result (Task 13),
+            e.g. ``dataclasses.asdict(VoiceConfidenceResult)``. ``None``
+            when no real audio was available for this answer (e.g. typed).
+        pronunciation: Optional "words to double check" proxy signal (Task
+            13), e.g. ``dataclasses.asdict(PronunciationSignal)``. ``None``
+            when there were no transcribed words to check.
 
     Returns:
         The autoincremented row id of the inserted answer.
@@ -134,8 +144,9 @@ def save_answer(
     cursor = conn.execute(
         """INSERT INTO answers
            (session_id, question, is_followup, area, transcript, scores_json,
-            features_json, feedback_json, answered_at, body_language_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            features_json, feedback_json, answered_at, body_language_json,
+            voice_confidence_json, pronunciation_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             session_id,
             question,
@@ -147,6 +158,8 @@ def save_answer(
             json.dumps(feedback),
             answered_at,
             json.dumps(body_language) if body_language is not None else None,
+            json.dumps(voice_confidence) if voice_confidence is not None else None,
+            json.dumps(pronunciation) if pronunciation is not None else None,
         ),
     )
     conn.commit()

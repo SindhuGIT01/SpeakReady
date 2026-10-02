@@ -68,6 +68,16 @@ real ML model I trained myself, not just an LLM prompt.
   also appears the moment transcription finishes, before the slower LLM
   feedback call below it loads. See [Limitations](#limitations) for why this
   is near-real-time rather than truly live.
+- 🎚️ **Voice confidence meter** — a signal-processing heuristic (not a
+  trained model) scores pitch variability, volume steadiness, and overall
+  speaking energy straight from the raw audio with
+  [librosa](https://librosa.org/), and combines them into a 0-100
+  confidence score with a plain-language explanation.
+- 🗣️ **Words to double check** — a proxy pronunciation signal: Groq's
+  Whisper API only exposes ASR confidence per *segment*, never per word, so
+  this flags the words spoken inside the least-confident segments as worth
+  a second listen, rather than claiming to score pronunciation it can't
+  actually measure. See [Limitations](#limitations).
 
 ## Architecture
 
@@ -82,16 +92,20 @@ flowchart TD
 
     Agent -- "TTS (gTTS)" --> Candidate((Candidate))
     Candidate -- "spoken answer" --> Whisper["Speech-to-Text\n(Groq Whisper API)"]
+    Candidate -- "raw audio" --> VoiceConf["Voice Confidence Meter\n(librosa pitch/RMS)"]
     Candidate -. "optional webcam snapshots" .-> BodyLang["Body Language Heuristics\n(MediaPipe Face + Pose)"]
 
     Whisper --> Features["Feature Extraction\n(WPM, pauses, fillers, TTR...)"]
     Whisper --> Timeline["Replay Timeline\n(filler/pause/pace markers)"]
+    Whisper -- "segment avg_logprob" --> Pronunciation["Words To Double Check\n(ASR confidence proxy)"]
     Features --> Fluency["ML Fluency Model\n(Random Forest)"]
     Whisper --> Feedback["LLM Feedback Engine\n(Groq openai/gpt-oss-120b)"]
 
     Fluency --> Score["Combined Score"]
     Feedback --> Score
     BodyLang -. "eye contact + posture" .-> Score
+    VoiceConf -. "confidence score" .-> Score
+    Pronunciation -. "words to double check" .-> Score
     Timeline -- "quick filler/pause count" --> Candidate
     Score --> Agent
 
@@ -118,8 +132,9 @@ Whisper-dependent paths are mocked in tests and skipped live without a key.
 | ML | scikit-learn (Random Forest) / XGBoost, features via [librosa](https://librosa.org/) |
 | Body language | [MediaPipe](https://ai.google.dev/edge/mediapipe) Face Landmarker + Pose Landmarker, via OpenCV |
 | Replay timeline | [Plotly](https://plotly.com/python/) for the filler/pause/pace marker chart |
+| Voice confidence | Raw-audio pitch/volume/energy analysis via [librosa](https://librosa.org/) (pYIN + RMS) |
 | Storage | SQLite (session history), PDF export via `fpdf2` |
-| Testing | pytest, 128 tests, mocked external APIs + auto-skipped live tests |
+| Testing | pytest, 154 tests, mocked external APIs + auto-skipped live tests |
 | CI | GitHub Actions — pytest + [ruff](https://docs.astral.sh/ruff/) on every push |
 
 All of it runs on free tiers — no paid API keys required.
@@ -191,6 +206,8 @@ speakready/
 │   ├── prompts.py             # Versioned LLM prompts
 │   ├── body_language.py       # Webcam eye contact / posture heuristics (MediaPipe)
 │   ├── timeline.py             # Answer replay timeline: filler/pause/pace markers
+│   ├── confidence.py          # Voice confidence meter: pitch/volume/energy (librosa)
+│   ├── pronunciation.py       # "Words to double check" ASR-confidence proxy
 │   ├── interview_agent.py     # Stateful InterviewSession: plan, follow-ups, summary
 │   ├── storage.py             # SQLite persistence for sessions/answers
 │   └── report.py              # PDF report generation
@@ -199,7 +216,7 @@ speakready/
 │   └── resumes/                # User uploads (git-ignored)
 ├── models/                    # Trained fluency model + metrics.json
 ├── notebooks/                 # Model training notebook (Task 6)
-├── tests/                     # pytest suite (128 tests)
+├── tests/                     # pytest suite (154 tests)
 ├── .github/workflows/ci.yml   # CI: pytest + ruff on every push
 └── requirements.txt
 ```
@@ -210,12 +227,13 @@ speakready/
 python -m pytest -v
 ```
 
-128 tests cover feature extraction, the fluency scorer, the LLM feedback
+154 tests cover feature extraction, the fluency scorer, the LLM feedback
 engine, the interview agent's question planning and follow-up logic, resume
 parsing/RAG, speech transcription, TTS caching, PDF reports, SQLite storage,
-the webcam body language heuristics, and the replay timeline's marker
-placement. External APIs (Groq LLM, Groq Whisper) are mocked everywhere
-except a handful of live smoke tests, which skip automatically when
+the webcam body language heuristics, the replay timeline's marker
+placement, and the voice confidence meter / pronunciation proxy signal.
+External APIs (Groq LLM, Groq Whisper) are mocked everywhere except a
+handful of live smoke tests, which skip automatically when
 `GROQ_API_KEY` isn't set — so the full suite (and CI) runs green with zero
 API keys. The MediaPipe face/pose landmarkers are mocked in tests too, so
 none of this needs a real webcam or a network download of the MediaPipe
@@ -313,6 +331,22 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
   It's feedback right after you stop talking, not feedback while you talk —
   genuine word-by-word real-time coaching would need a different frontend
   (e.g. a WebSocket/streaming-ASR setup) in place of Streamlit's rerun model.
+- **Voice confidence is a signal-processing heuristic, not a trained
+  model.** Pitch variability, volume steadiness, and speaking energy come
+  from thresholds and ratios over raw librosa pitch/RMS measurements — not
+  a model fit to labeled "sounds confident" data, the way the fluency score
+  is. Treat the numbers as a rough, indicative coaching signal, same
+  caveat as body language above.
+- **Pronunciation scoring isn't available locally — "words to double
+  check" is a proxy, not a verdict.** True per-word pronunciation scoring
+  (what speechocean762's word-level labels represent) needs a
+  forced-alignment or phoneme-confidence model running locally. Groq's
+  hosted Whisper API only exposes ASR confidence per *segment*
+  (`avg_logprob`), never per word, so this feature instead flags the words
+  spoken inside the least-confident segments as worth a second listen. A
+  flagged word might be mispronounced, mumbled, drowned out by background
+  noise, or just an unusual/rare word the ASR wasn't expecting — this
+  signal can't tell those apart.
 - **Ephemeral demo storage.** See [Deployment](#deployment) above.
 
 ## Future improvements
@@ -330,6 +364,9 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
 - [ ] Multi-language support (question bank + prompts + TTS language).
 - [ ] Per-question difficulty adaptation based on how the candidate is doing
       mid-interview, not just the difficulty picked at setup.
+- [ ] A local forced-alignment/phoneme-confidence model (e.g. a
+      Montreal-Forced-Aligner-style pipeline) for genuine per-word
+      pronunciation scoring, replacing today's segment-confidence proxy.
 
 ## Recording the demo GIF
 
