@@ -253,76 +253,66 @@ ruff check .
 
 ## Deployment
 
-The live demo runs on [Hugging Face Spaces](https://huggingface.co/spaces)
-(free CPU tier). To deploy your own copy:
+The live demo runs on [Streamlit Community Cloud](https://streamlit.io/cloud)
+(free tier), deployed straight from this GitHub repo. To deploy your own copy:
 
-1. **Create the Space.** Go to [huggingface.co/new-space](https://huggingface.co/new-space),
-   pick an owner + name (e.g. `speakready`), choose **Streamlit** as the SDK,
-   **CPU basic** hardware (free), and create it.
-2. **Add your git remote.**
-   ```bash
-   git remote add space https://huggingface.co/spaces/<your-username>/speakready
+1. **Push this repo to your own GitHub account** (fork or clone it there) —
+   Streamlit Cloud deploys directly from a GitHub repo, no separate git
+   remote needed.
+2. **Create the app.** Go to [share.streamlit.io](https://share.streamlit.io),
+   sign in with GitHub, click **"New app"**, and pick your repo, the `main`
+   branch, and `app.py` as the main file path.
+3. **Set the Python version before deploying.** Open **"Advanced settings"**
+   in the deploy dialog and pick **Python 3.12 or higher** from the dropdown.
+   This matters: `numpy~=2.5` in `requirements.txt` dropped support for
+   Python 3.11, so deploying on the platform's older default fails with
+   `No matching distribution found for numpy`. (`runtime.txt` /
+   `.python-version` files are **not** read by Streamlit Cloud — the Python
+   version can only be set here, and only at deploy time; changing it later
+   for an existing app means deleting and redeploying it.)
+4. **Add your secret**, in the same "Advanced settings" dialog (or later via
+   the app's **Settings → Secrets**), as TOML:
+   ```toml
+   GROQ_API_KEY = "your_key_here"
    ```
-3. **Push your code.**
-   ```bash
-   git push space main
-   ```
-4. **Fix the README metadata.** Hugging Face Spaces requires a small YAML
-   block at the top of `README.md` to detect the SDK — the Space's own
-   auto-generated README already has one, but your push just overwrote it
-   with this repo's README (which doesn't, on purpose, so it stays clean on
-   GitHub). Open the Space → **Files** → `README.md` → **edit**, and add this
-   block as the very first lines of the file, then commit:
-   ```yaml
-   ---
-   title: SpeakReady
-   emoji: 🎤
-   colorFrom: indigo
-   colorTo: blue
-   sdk: streamlit
-   sdk_version: "1.64.0"
-   app_file: app.py
-   pinned: false
-   license: mit
-   ---
-   ```
-5. **Add your secret.** Space → **Settings** → **Variables and secrets** →
-   **New secret** → name it `GROQ_API_KEY`, paste your key. `src/config.py`
-   reads it the same way it reads a local `.env` — no code changes needed.
-6. **Wait for the build**, then open the Space. Check progress under the
-   **Logs** tab (or **"Building"** status banner) — if the build fails, the
-   stack trace there is almost always the fastest way to see why; a
-   `pip install` failure or a crash on `import mediapipe`/`import cv2` are
-   the two most common causes (see **System packages** below). The first
-   successful request will also take longer than local runs (downloading
-   the embedding model + building the Chroma index inside the container),
-   same as the first local run.
+   `src/config.py` reads it the same way it reads a local `.env` — no code
+   changes needed.
+5. **Click Deploy**, then watch the build log in the terminal pane that
+   opens automatically (or later via the app's **⋮ menu → Manage app**). If
+   the build fails, the traceback there is almost always the fastest way to
+   see why; a `pip install` failure or a crash on `import mediapipe`/
+   `import cv2` are the two most common causes (see **System packages**
+   below). The first successful request will also take longer than local
+   runs (downloading the embedding model + building the Chroma index inside
+   the container), same as the first local run.
 
 **Model file handling:** `models/fluency_model.joblib` (~6 MB) is small
 enough to commit directly to git — no Git LFS needed. It's already tracked
-in this repo and ships with the Space automatically. The two MediaPipe
+in this repo and ships with the deploy automatically. The two MediaPipe
 `.task` bundles (`models/*.task`, ~9 MB combined) are intentionally
 git-ignored and download themselves from Google's model-bundle CDN on first
-use, inside the Space container, so they never need to be committed.
+use, inside the container, so they never need to be committed.
 
-**System packages:** `packages.txt` (committed at the repo root) installs
-`libgl1` and `libglib2.0-0` via apt on the Space. mediapipe's compiled core
-(via its `opencv-contrib-python` dependency) links against `libGL` even for
-plain CPU inference, and Spaces' slim Streamlit container doesn't ship it —
-without `packages.txt`, the Space builds fine but crashes at runtime on the
-first `import mediapipe` with `ImportError: libGL.so.1: cannot open shared
-object file`. Don't additionally pin `opencv-python` or
+**System packages:** `packages.txt` (committed at the repo root, **one apt
+package name per line — no `#` comments**; Streamlit Cloud's apt installer
+reads a comment's words as package names and fails the build) installs
+`libgl1` and `libglib2.0-0`. mediapipe's compiled core (via its
+`opencv-contrib-python` dependency) links against `libGL` even for plain
+CPU inference, and Streamlit Cloud's slim container doesn't ship it —
+without `packages.txt`, the build succeeds but the app crashes at runtime on
+the first `import mediapipe` with `ImportError: libGL.so.1: cannot open
+shared object file`. Don't additionally pin `opencv-python` or
 `opencv-python-headless` in `requirements.txt`: mediapipe already pulls in
 `opencv-contrib-python`, and having two opencv distributions installed at
 once corrupts the shared `cv2` module (symptoms like `cv2.cvtColor` or
 `cv2.VideoCapture` missing) — this repo hit exactly that while preparing
 this deployment and removed the redundant pin.
 
-**Note on storage:** Hugging Face's free CPU tier uses ephemeral storage —
-the SQLite progress history and Chroma index reset when the Space restarts
-or sleeps. That's fine for a portfolio demo; for persistent history, enable
-[persistent storage](https://huggingface.co/docs/hub/spaces-storage) on the
-Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
+**Note on storage:** Streamlit Cloud's free tier uses ephemeral storage —
+the SQLite progress history and Chroma index reset whenever the app
+restarts, sleeps, or redeploys. That's fine for a portfolio demo; for
+persistent history, point `DB_PATH`/`CHROMA_DIR` at an external database
+instead.
 
 ## Limitations
 
@@ -375,16 +365,14 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
   noise, or just an unusual/rare word the ASR wasn't expecting — this
   signal can't tell those apart.
 - **Ephemeral demo storage.** See [Deployment](#deployment) above.
-- **Mic/webcam permissions on the hosted Space.** `st.audio_input` and
+- **Mic/webcam permissions on the hosted demo.** `st.audio_input` and
   `st.camera_input` ask the browser for mic/camera access, which needs a
-  secure (HTTPS) context — Spaces serve over HTTPS, so this works the same
-  as localhost. If a permission prompt doesn't appear inside the embedded
-  Space page on huggingface.co, open the Space's direct app URL (the
-  "Embed this Space" / fullscreen link) in its own tab rather than the
-  iframe view — browsers are more consistent about granting mic/camera
-  permissions to a top-level page than to an embedded one.
-- **Free-tier cold starts.** Hugging Face's free CPU tier puts idle Spaces
-  to sleep; the first visit after a period of inactivity triggers a cold
+  secure (HTTPS) context — `*.streamlit.app` serves over HTTPS, so this
+  works the same as localhost. If a permission prompt doesn't appear, check
+  that your browser hasn't blocked mic/camera for the site already (the
+  padlock/site-info icon in the address bar), then retry.
+- **Free-tier cold starts.** Streamlit Community Cloud puts idle apps to
+  sleep; the first visit after a period of inactivity triggers a cold
   restart (container boot + re-embedding the question bank), which can take
   noticeably longer than the warm, already-running state. Expected for a
   free portfolio demo, not a bug.
@@ -394,7 +382,7 @@ Space (paid) or point `DB_PATH`/`CHROMA_DIR` at an external database.
 - [ ] Add non-native accent variety and spontaneous-speech data to the
       fluency training set to close the read-aloud → spontaneous-speech gap.
 - [ ] Persist the Chroma index and SQLite history to external/managed
-      storage so Space restarts don't lose data.
+      storage so app restarts don't lose data.
 - [ ] A real continuous webcam video recorder (e.g. a custom
       `streamlit-webrtc` component) instead of a handful of manual snapshots,
       for a less coarse eye-contact/posture signal.
