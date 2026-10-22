@@ -29,19 +29,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Install system packages (libGL for mediapipe/opencv)
-        run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
+      - name: Install system packages (libGL/libEGL for mediapipe/opencv)
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0 libegl1 libgles2
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run tests
-        run: |
-          set -o pipefail
-          python -m pytest -v 2>&1 | tee pytest_output.log
-          status=$?
-          {
-            echo '## Pytest output (last 250 lines) [TEMP diagnostic]'
-            echo '```'
-            tail -n 250 pytest_output.log
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit $status
+        run: python -m pytest -v

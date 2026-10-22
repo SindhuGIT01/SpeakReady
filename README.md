@@ -296,12 +296,14 @@ use, inside the container, so they never need to be committed.
 **System packages:** `packages.txt` (committed at the repo root, **one apt
 package name per line — no `#` comments**; Streamlit Cloud's apt installer
 reads a comment's words as package names and fails the build) installs
-`libgl1` and `libglib2.0-0`. mediapipe's compiled core (via its
-`opencv-contrib-python` dependency) links against `libGL` even for plain
-CPU inference, and Streamlit Cloud's slim container doesn't ship it —
-without `packages.txt`, the build succeeds but the app crashes at runtime on
-the first `import mediapipe` with `ImportError: libGL.so.1: cannot open
-shared object file`. Don't additionally pin `opencv-python` or
+`libgl1`, `libglib2.0-0`, `libegl1`, and `libgles2`. mediapipe's compiled
+core (via its `opencv-contrib-python` dependency) links against
+`libGL`/`libEGL`/`libGLES` even for plain CPU inference, and Streamlit
+Cloud's slim container doesn't ship them — without `packages.txt`, the
+build succeeds but the app crashes at runtime on the first
+`import mediapipe` with `ImportError: libGL.so.1: cannot open shared
+object file` (or `libEGL.so.1` once `libgl1` alone is installed — CI hit
+both in sequence). Don't additionally pin `opencv-python` or
 `opencv-python-headless` in `requirements.txt`: mediapipe already pulls in
 `opencv-contrib-python`, and having two opencv distributions installed at
 once corrupts the shared `cv2` module (symptoms like `cv2.cvtColor` or
