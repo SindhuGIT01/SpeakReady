@@ -34,4 +34,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run tests
-        run: python -m pytest -v
+        run: |
+          set -o pipefail
+          python -m pytest -v 2>&1 | tee pytest_output.log
+          status=$?
+          {
+            echo '## Pytest output (last 250 lines) [TEMP diagnostic]'
+            echo '```'
+            tail -n 250 pytest_output.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
